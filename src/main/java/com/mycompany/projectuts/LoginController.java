@@ -6,6 +6,7 @@ package com.mycompany.projectuts;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
 import javafx.fxml.Initializable;
 
 /**
@@ -21,6 +22,12 @@ public class LoginController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+
+        int i = 0;
+        for (i = 0 ; i < 10 ; i++) {
+            System.err.println("dfisduf");
+            
+        }
     }    
     
 }
