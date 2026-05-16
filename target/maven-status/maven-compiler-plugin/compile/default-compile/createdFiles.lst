@@ -1,6 +1,10 @@
 com\mycompany\projectuts\LoginController.class
+com\mycompany\projectuts\DashboardController$StockItem.class
 com\mycompany\projectuts\DashboardController.class
 com\mycompany\projectuts\App.class
 com\mycompany\projectuts\SignupController.class
 com\mycompany\projectuts\SecondaryController.class
 module-info.class
+com\mycompany\projectuts\DashboardController$2.class
+com\mycompany\projectuts\DashboardController$TransaksiItem.class
+com\mycompany\projectuts\DashboardController$1.class

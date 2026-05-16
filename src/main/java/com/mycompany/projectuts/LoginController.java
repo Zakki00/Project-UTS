@@ -100,6 +100,7 @@ public class LoginController implements Initializable {
             Parent root = loader.load();
             Stage stage = (Stage) loginBtn.getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
