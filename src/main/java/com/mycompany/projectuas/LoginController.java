@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import java.util.List;
 
 import java.io.IOException;
 import java.net.URL;
@@ -36,6 +37,8 @@ public class LoginController implements Initializable {
     private Button togglePasswordBtn;
 
     private boolean showingPassword = false;
+    public String name;
+    public int userId;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -50,15 +53,19 @@ public class LoginController implements Initializable {
         String password = showingPassword
                 ? passwordVisible.getText()
                 : passwordField.getText();
-
+        String query = "SELECT * FROM tb_user WHERE username = '" + username + "' AND password = '" + password + "'";
+        List<Object[]> result = koneksi.ambilData(query);
         if (username.isEmpty() || password.isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Perhatian", "Username dan password tidak boleh kosong.");
             return;
         }
 
         // TODO: ganti dengan logika autentikasi nyata
-        if (username.equals("admin@storems.id") && password.equals("admin123")) {
+        if (result.size() > 0) {
             navigateToDashboard();
+            userId = (int) result.get(0)[0];
+            name = (String) result.get(0)[1];
+            System.out.println("Login berhasil untuk user ID: " + userId);
         } else {
             showAlert(Alert.AlertType.ERROR, "Gagal Masuk", "Username atau password salah.");
         }
@@ -67,6 +74,7 @@ public class LoginController implements Initializable {
     @FXML
     private void handleGuestLogin(ActionEvent event) {
         navigateToDashboard();
+        
     }
 
     @FXML
@@ -115,4 +123,6 @@ public class LoginController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    
 }

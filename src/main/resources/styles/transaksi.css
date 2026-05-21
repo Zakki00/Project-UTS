@@ -1,7 +1,181 @@
-/*
- * Empty Stylesheet file.
- */
+/* ═══════════════════════════════════════════════════════════
+   StoreMS — dashboard.css
+   Dark Mode Theme  |  com.mycompany.projectuas
+════════════════════════════════════════════════════════════ */
 
-.mainFxmlClass {
+/* ── VARIABLES (emulated via repeating values) ───────────── */
+/* bg:#0F1117  surface:#1A1D2E  surface2:#252840
+   accent:#6C63FF  accent2:#00D4FF
+   green:#00E5A0  red:#FF5C7C  yellow:#FFD166
+   text:#FFFFFF  muted:#8B8FA8  border:#2E3250            */
 
+/* ── ROOT ────────────────────────────────────────────────── */
+.root-pane {
+    -fx-background-color: #0F1117;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════════════════════════ */
+.sidebar {
+    -fx-background-color: #1A1D2E;
+    -fx-border-color: #2E3250;
+    -fx-border-width: 0 1 0 0;
+    -fx-min-width: 60;
+    -fx-pref-width: 220;
+}
+
+/* Logo row */
+.logo-row {
+    -fx-padding: 18 16 18 16;
+    -fx-min-height: 62;
+}
+
+.logo-icon {
+    -fx-font-size: 20px;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-background-color: #6C63FF;
+    -fx-background-radius: 10;
+    -fx-alignment: CENTER;
+}
+
+.logo-brand {
+    /* managed by controller when collapsed */
+}
+
+.logo-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.logo-sub {
+    -fx-text-fill: #8B8FA8;
+    -fx-font-size: 9px;
+}
+
+/* Divider */
+.sidebar-divider {
+    -fx-background-color: #2E3250;
+    -fx-padding: 0;
+}
+
+/* Nav menu */
+.nav-menu {
+    -fx-padding: 10 0 10 0;
+}
+
+.nav-item {
+    -fx-padding: 10 14 10 0;
+    -fx-margin: 2 6 2 6;
+    -fx-background-color: transparent;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-min-height: 40;
+}
+
+.nav-item:hover {
+    -fx-background-color: #252840;
+}
+
+.nav-active {
+    -fx-background-color: rgba(108, 99, 255, 0.13);
+}
+
+.nav-active:hover {
+    -fx-background-color: rgba(108, 99, 255, 0.18);
+}
+
+/* Active bar (left accent) */
+.nav-active-bar {
+    -fx-fill: #6C63FF;
+    -fx-arc-width: 4;
+    -fx-arc-height: 4;
+    -fx-min-width: 3;
+    -fx-max-width: 3;
+    -fx-min-height: 22;
+    -fx-max-height: 22;
+}
+
+.nav-active-bar-hidden {
+    -fx-fill: transparent;
+    -fx-min-width: 3;
+    -fx-max-width: 3;
+    -fx-min-height: 22;
+    -fx-max-height: 22;
+}
+
+.nav-icon {
+    -fx-font-size: 16px;
+    -fx-text-fill: #8B8FA8;
+    -fx-min-width: 26;
+    -fx-alignment: CENTER;
+}
+
+.nav-label {
+    -fx-text-fill: #8B8FA8;
+    -fx-font-size: 12px;
+}
+
+.nav-active .nav-label {
+    -fx-text-fill: #6C63FF;
+    -fx-font-weight: bold;
+}
+
+.nav-active .nav-icon {
+    -fx-text-fill: #6C63FF;
+}
+
+/* User row */
+.user-row {
+    -fx-padding: 12 16 12 16;
+}
+
+.user-avatar {
+    -fx-min-width: 30;
+    -fx-min-height: 30;
+    -fx-max-width: 30;
+    -fx-max-height: 30;
+    -fx-background-color: rgba(108, 99, 255, 0.25);
+    -fx-border-color: #6C63FF;
+    -fx-border-width: 2;
+    -fx-background-radius: 50;
+    -fx-border-radius: 50;
+    -fx-text-fill: #6C63FF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+}
+
+.user-name {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.user-role {
+    -fx-text-fill: #8B8FA8;
+    -fx-font-size: 9px;
+}
+
+/* Toggle button */
+.toggle-btn {
+    -fx-background-color: #252840;
+    -fx-border-color: #2E3250;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: #8B8FA8;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 6 10 6 10;
+    -fx-margin: 8 12 14 12;
+}
+
+.toggle-btn:hover {
+    -fx-background-color: #2E3250;
+    -fx-text-fill: #FFFFFF;
 }
