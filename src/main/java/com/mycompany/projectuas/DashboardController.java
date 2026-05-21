@@ -10,6 +10,7 @@ import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.input.MouseEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -235,6 +236,8 @@ public class DashboardController implements Initializable {
     @FXML
     private void onNavKasir() {
         setActiveNav(navKasir);
+        navigation nav = new navigation();
+        nav.navigateToTransaksi();
     }
 
     @FXML
@@ -245,11 +248,14 @@ public class DashboardController implements Initializable {
     @FXML
     private void onNavLaporan() {
         setActiveNav(navLaporan);
+        navigation nav = new navigation();
+        nav.navigateToLaporan();
     }
 
     @FXML
     private void onNavPengaturan() {
         setActiveNav(navPengaturan);
+        
     }
 
     private void setActiveNav(HBox selected) {
@@ -273,6 +279,9 @@ public class DashboardController implements Initializable {
             item.setOnMouseExited(e -> item.setStyle(""));
         }
     }
+
+
+    
 
     // ═════════════════════════════════════════════════════
     // CHARTS
