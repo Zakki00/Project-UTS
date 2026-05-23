@@ -20,16 +20,24 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.stage.Stage;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-
+import javafx.scene.shape.Rectangle;
 
 /**
  * FXML Controller class
@@ -38,58 +46,102 @@ import javafx.util.Duration;
  */
 public class TransaksiController implements Initializable {
 
-   // ── FXML refs ────────────────────────────────────────
-    @FXML private FlowPane  flowProduk;
-    @FXML private TextField tfCari;
-    @FXML private ComboBox<String> cbKategori;
-    @FXML private Label     lblJumlahProduk;
-    @FXML private Button    btnClearSearch;
+    koneksi koneksi = new koneksi();
 
-    @FXML private VBox      sidebar;
-    @FXML private Button    toggleBtn;
-    @FXML private HBox      logoRow;
-    @FXML private VBox      logoBrand;
-    @FXML private VBox      userInfo;
-    @FXML private HBox      userRow;
-    @FXML private VBox      navMenu;
-    @FXML private HBox      navDashboard;
-    @FXML private HBox      navProduk;
-    @FXML private HBox      navKasir;
-    @FXML private HBox      navPelanggan;
-    @FXML private HBox      navLaporan;
-    @FXML private HBox      navPengaturan;
+    // ── FXML refs ────────────────────────────────────────
+    @FXML
+    private FlowPane flowProduk;
+    @FXML
+    private TextField tfCari;
+    @FXML
+    private ComboBox<String> cbKategori;
+    @FXML
+    private Label lblJumlahProduk;
+    @FXML
+    private Button btnClearSearch;
 
-    @FXML private Label     navLblDashboard;
-    @FXML private Label     navLblProduk;
-    @FXML private Label     navLblKasir;
-    @FXML private Label     navLblPelanggan;
-    @FXML private Label     navLblLaporan;
-    @FXML private Label     navLblPengaturan;
+    @FXML
+    private VBox sidebar;
+    @FXML
+    private Button toggleBtn;
+    @FXML
+    private HBox logoRow;
+    @FXML
+    private VBox logoBrand;
+    @FXML
+    private VBox userInfo;
+    @FXML
+    private HBox userRow;
+    @FXML
+    private VBox navMenu;
+    @FXML
+    private HBox navDashboard;
+    @FXML
+    private HBox navProduk;
+    @FXML
+    private HBox navKasir;
+    @FXML
+    private HBox navPelanggan;
+    @FXML
+    private HBox navLaporan;
+    @FXML
+    private HBox navPengaturan;
+
+    @FXML
+    private Label navLblDashboard;
+    @FXML
+    private Label navLblProduk;
+    @FXML
+    private Label navLblKasir;
+    @FXML
+    private Label navLblPelanggan;
+    @FXML
+    private Label navLblLaporan;
+    @FXML
+    private Label navLblPengaturan;
 
     private boolean sidebarCollapsed = false;
     private static final double SIDEBAR_FULL = 220;
     private static final double SIDEBAR_MINI = 60;
 
-    @FXML private VBox      vboxKeranjang;
-    @FXML private VBox      emptyCart;
-    @FXML private Label     lblJumlahItem;
-    @FXML private Label     lblNamaKasir;
-    @FXML private Label     lblShift;
+    @FXML
+    private VBox vboxKeranjang;
+    @FXML
+    private VBox emptyCart;
+    @FXML
+    private Label lblJumlahItem;
+    @FXML
+    private Label lblNamaKasir;
+    @FXML
+    private Label lblShift;
 
-    @FXML private Label     lblSubtotal;
-    @FXML private Label     lblDiskon;
-    @FXML private Label     lblPajak;
-    @FXML private Label     lblTotal;
-    @FXML private TextField tfDiskon;
-    @FXML private TextField tfTunai;
-    @FXML private Label     lblKembalian;
-    @FXML private VBox      tunaiBox;
-    @FXML private Label     lblNoTrx;
+    @FXML
+    private Label lblSubtotal;
+    @FXML
+    private Label lblDiskon;
+    @FXML
+    private Label lblPajak;
+    @FXML
+    private Label lblTotal;
+    @FXML
+    private TextField tfDiskon;
+    @FXML
+    private TextField tfTunai;
+    @FXML
+    private Label lblKembalian;
+    @FXML
+    private VBox tunaiBox;
+    @FXML
+    private Label lblNoTrx;
 
-    @FXML private Button    btnBayar;
-    @FXML private Button    btnTunai;
-    @FXML private Button    btnQris;
-    @FXML private Button    btnDebit;
+    @FXML
+    private Button btnBayar;
+    @FXML
+    private Button btnTunai;
+    @FXML
+    private Button btnQris;
+    @FXML
+    private Button btnDebit;
 
     @FXML
     private void onToggleSidebar() {
@@ -134,20 +186,59 @@ public class TransaksiController implements Initializable {
         timeline.play();
     }
 
-    @FXML private void onNotif() {
+    @FXML
+    private void onNotif() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Notifikasi");
         alert.setHeaderText(null);
         alert.setContentText("Tidak ada pemberitahuan baru.");
         alert.showAndWait();
     }
+// ═════════════════════════════════════════════════════
+    // NAV CLICK HANDLERS
+    // ═════════════════════════════════════════════════════
+    @FXML
+    private void onNavDashboard() {
+        setActiveNav(navDashboard);
+        navigation nav = new navigation();
+        nav.navigateToDashboard();
+        Stage stage = (Stage) navDashboard.getScene().getWindow();
+        stage.close();
+        
+        
+    }
 
-    @FXML private void onNavDashboard() { setActiveNav(navDashboard); }
-    @FXML private void onNavProduk()     { setActiveNav(navProduk); }
-    @FXML private void onNavKasir()      { setActiveNav(navKasir); }
-    @FXML private void onNavPelanggan()  { setActiveNav(navPelanggan); }
-    @FXML private void onNavLaporan()    { setActiveNav(navLaporan); }
-    @FXML private void onNavPengaturan() { setActiveNav(navPengaturan); }
+    @FXML
+    private void onNavProduk() {
+        setActiveNav(navProduk);
+    }
+
+    @FXML
+    private void onNavKasir() {
+        setActiveNav(navKasir);
+       
+    }
+
+    @FXML
+    private void onNavPelanggan() {
+        setActiveNav(navPelanggan);
+    }
+
+    @FXML
+    private void onNavLaporan() {
+        setActiveNav(navLaporan);
+        navigation nav = new navigation();
+        nav.navigateToLaporan();
+        Stage stage = (Stage) navLaporan.getScene().getWindow();
+        stage.close();
+    }
+
+    @FXML
+    private void onNavPengaturan() {
+        setActiveNav(navPengaturan);
+        
+    }
+
 
     private void hideSidebarText() {
         logoBrand.setVisible(false);
@@ -203,7 +294,7 @@ public class TransaksiController implements Initializable {
 
     // ── Data ─────────────────────────────────────────────
     private final List<Produk> semuaProduk = new ArrayList<>();
-    private final Map<String, CartItem> keranjang = new LinkedHashMap<>();
+    private final Map<Integer, CartItem> keranjang = new LinkedHashMap<>();
     private String metodeBayar = "TUNAI";
     private int noTrx = 1;
 
@@ -212,23 +303,36 @@ public class TransaksiController implements Initializable {
 
     // ── Model ─────────────────────────────────────────────
     static class Produk {
-        String id, nama, kategori, emoji;
-        long harga;
-        int stok;
 
-        Produk(String id, String nama, String kategori,
-               String emoji, long harga, int stok) {
-            this.id = id; this.nama = nama;
-            this.kategori = kategori; this.emoji = emoji;
-            this.harga = harga; this.stok = stok;
+        String nama, kategori, description, imageUrl;
+
+        int id, stok, harga;
+
+        Produk(int id, String nama, int harga, String kategori, int stok, String description, String imageUrl) {
+            this.id = id;
+            this.nama = nama;
+            this.harga = harga;
+            this.kategori = kategori;
+            this.stok = stok;
+            this.description = description;
+            this.imageUrl = imageUrl;
+
         }
     }
 
     static class CartItem {
+
         Produk produk;
         int qty;
-        CartItem(Produk p) { this.produk = p; this.qty = 1; }
-        long subtotal() { return (long) produk.harga * qty; }
+
+        CartItem(Produk p) {
+            this.produk = p;
+            this.qty = 1;
+        }
+
+        long subtotal() {
+            return (long) produk.harga * qty;
+        }
     }
 
     // ═════════════════════════════════════════════════════
@@ -236,7 +340,7 @@ public class TransaksiController implements Initializable {
     // ═════════════════════════════════════════════════════
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        loadDummyProduk();
+        loadproduk();
         setupKategori();
         setupSearch();
         renderProduk(semuaProduk);
@@ -246,22 +350,24 @@ public class TransaksiController implements Initializable {
         lblShift.setText("Shift Siang");
         lblNoTrx.setText(String.format("#TRX-%04d", noTrx));
         btnBayar.setDisable(true);
+        
     }
 
-    // ── Dummy data ────────────────────────────────────────
-    private void loadDummyProduk() {
-        semuaProduk.addAll(List.of(
-            new Produk("P01","Indomie Goreng","Makanan","🍜",3_500,248),
-            new Produk("P02","Aqua 600ml",    "Minuman","💧",4_000,180),
-            new Produk("P03","Teh Sosro",     "Minuman","🍵",5_000,12),
-            new Produk("P04","Beng-Beng",     "Snack",  "🍫",4_000,67),
-            new Produk("P05","Minyak Goreng", "Dapur",  "🧴",18_000,3),
-            new Produk("P06","Sabun Lifebuoy","Kebersihan","🧼",12_500,95),
-            new Produk("P07","Kopi Kapal Api","Minuman","☕",8_000,40),
-            new Produk("P08","Gula Pasir 1kg","Dapur",  "🍚",14_000,8),
-            new Produk("P09","Oreo Vanilla",  "Snack",  "🍪",8_500,55),
-            new Produk("P10","Susu Ultra 250","Minuman","🥛",6_000,0)  // stok habis
-        ));
+    // ──data ────────────────────────────────────────
+    private void loadproduk() {
+        String sql = "SELECT * FROM tb_barang";
+        List<Object[]> data = koneksi.ambilData(sql);
+        for (Object[] row : data) {
+            int id = (int) row[0];
+            String nama = (String) row[1];
+            int harga = (int) row[2];
+            String kategori = (String) row[3];
+            int stok = (int) row[4];
+            String description = (String) row[5];
+            String imageUrl = (String) row[6];
+
+            semuaProduk.add(new Produk(id, nama, harga, kategori, stok, description, imageUrl));
+        }
     }
 
     private void setupKategori() {
@@ -291,38 +397,70 @@ public class TransaksiController implements Initializable {
     private VBox buildProdukCard(Produk p) {
         boolean habis = p.stok == 0;
 
-        // Emoji
-        Label emoji = new Label(p.emoji);
-        emoji.getStyleClass().add("produk-card-emoji");
+        // ── ImageView ──────────────────────────────────
+        ImageView img = new ImageView();
+        img.setFitWidth(120);
+        img.setFitHeight(90);
+        img.setPreserveRatio(true);  // ← tetap true, jaga rasio
+        img.setSmooth(true);
 
-        // Nama
+// Crop tengah — potong bagian yang keluar
+        Rectangle clip = new Rectangle(120, 90);
+        clip.setArcWidth(10);   // rounded clip juga
+        clip.setArcHeight(10);
+        img.setClip(clip);
+
+        try {
+            var url = getClass().getResource("/image/not_found.png");
+            if (url != null) {
+                img.setImage(new Image(url.toExternalForm()));
+            }
+        } catch (Exception e) {
+            System.out.println("Gambar tidak ditemukan");
+        }
+
+        StackPane imgWrapper = new StackPane(img);
+        imgWrapper.getStyleClass().add("produk-card-img-wrapper");
+        imgWrapper.setPrefSize(120, 90);
+        imgWrapper.setMinSize(120, 90);
+        imgWrapper.setMaxSize(120, 90);
+
+        // ── Nama ───────────────────────────────────────
         Label nama = new Label(p.nama);
         nama.getStyleClass().add("produk-card-nama");
         nama.setMaxWidth(130);
         nama.setWrapText(true);
 
-        // Harga
+        // ── Deskripsi ──────────────────────────────────
+        Label desc = new Label(p.description);
+        desc.getStyleClass().add("produk-card-desc");
+        desc.setMaxWidth(130);
+        desc.setWrapText(true);
+
+        // ── Harga ──────────────────────────────────────
         Label harga = new Label("Rp " + FMT.format(p.harga));
         harga.getStyleClass().add("produk-card-harga");
 
-        // Stok
+        // ── Stok ───────────────────────────────────────
         Label stok = new Label(habis ? "Stok habis" : "Stok: " + p.stok);
         stok.getStyleClass().add("produk-card-stok");
 
-        // Tombol tambah
+        // ── Tombol tambah ──────────────────────────────
         Button btnTambah = new Button("+ Tambah");
         btnTambah.getStyleClass().add("btn-tambah-card");
         btnTambah.setDisable(habis);
+        btnTambah.setMaxWidth(Double.MAX_VALUE);
         btnTambah.setOnAction(e -> tambahKeKeranjang(p));
 
-        VBox card = new VBox(6, emoji, nama, harga, stok, btnTambah);
+        // ── Rakit card — imgWrapper & desc sudah masuk ─
+        VBox card = new VBox(6, imgWrapper, nama, desc, harga, stok, btnTambah);
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(12));
-        card.setPrefWidth(150);
-        card.setPrefHeight(165);
+        card.setPrefWidth(155);
+        card.setPrefHeight(240); // lebih tinggi karena ada gambar + deskripsi
         card.getStyleClass().add(habis ? "produk-card produk-card-habis" : "produk-card");
 
-        // Klik card = tambah ke keranjang
+        // ── Klik card = tambah ke keranjang ────────────
         if (!habis) {
             card.setOnMouseClicked(e -> tambahKeKeranjang(p));
         }
@@ -335,14 +473,14 @@ public class TransaksiController implements Initializable {
     // ═════════════════════════════════════════════════════
     private void filterProduk() {
         String query = tfCari.getText().toLowerCase().trim();
-        String kat   = cbKategori.getValue();
+        String kat = cbKategori.getValue();
 
         List<Produk> hasil = semuaProduk.stream()
-            .filter(p -> (kat == null || kat.equals("Semua Kategori")
-                          || p.kategori.equals(kat)))
-            .filter(p -> query.isEmpty()
-                         || p.nama.toLowerCase().contains(query))
-            .toList();
+                .filter(p -> (kat == null || kat.equals("Semua Kategori")
+                || p.kategori.equals(kat)))
+                .filter(p -> query.isEmpty()
+                || p.nama.toLowerCase().contains(query))
+                .toList();
 
         renderProduk(hasil);
     }
@@ -360,7 +498,9 @@ public class TransaksiController implements Initializable {
     private void tambahKeKeranjang(Produk p) {
         if (keranjang.containsKey(p.id)) {
             CartItem ci = keranjang.get(p.id);
-            if (ci.qty < p.stok) ci.qty++;
+            if (ci.qty < p.stok) {
+                ci.qty++;
+            }
         } else {
             keranjang.put(p.id, new CartItem(p));
         }
@@ -401,7 +541,11 @@ public class TransaksiController implements Initializable {
         Button btnMin = new Button("−");
         btnMin.getStyleClass().add("btn-qty");
         btnMin.setOnAction(e -> {
-            if (ci.qty > 1) { ci.qty--; } else { keranjang.remove(ci.produk.id); }
+            if (ci.qty > 1) {
+                ci.qty--;
+            } else {
+                keranjang.remove(ci.produk.id);
+            }
             renderKeranjang();
             updateSummary();
         });
@@ -413,7 +557,9 @@ public class TransaksiController implements Initializable {
         btnPlus.getStyleClass().add("btn-qty");
         btnPlus.setDisable(ci.qty >= ci.produk.stok);
         btnPlus.setOnAction(e -> {
-            if (ci.qty < ci.produk.stok) ci.qty++;
+            if (ci.qty < ci.produk.stok) {
+                ci.qty++;
+            }
             renderKeranjang();
             updateSummary();
         });
@@ -449,7 +595,7 @@ public class TransaksiController implements Initializable {
     // ═════════════════════════════════════════════════════
     private void updateSummary() {
         long subtotal = keranjang.values().stream()
-            .mapToLong(CartItem::subtotal).sum();
+                .mapToLong(CartItem::subtotal).sum();
 
         double diskonPct = parseDouble(tfDiskon.getText());
         long diskon = (long) (subtotal * diskonPct / 100.0);
@@ -466,27 +612,36 @@ public class TransaksiController implements Initializable {
         long tunai = parseLong(tfTunai.getText().replaceAll("[^0-9]", ""));
         long kembalian = tunai - total;
         lblKembalian.setText(kembalian >= 0
-            ? "Rp " + FMT.format(kembalian)
-            : "Kurang Rp " + FMT.format(Math.abs(kembalian)));
+                ? "Rp " + FMT.format(kembalian)
+                : "Kurang Rp " + FMT.format(Math.abs(kembalian)));
         lblKembalian.setStyle(kembalian >= 0
-            ? "-fx-text-fill: #00E5A0;"
-            : "-fx-text-fill: #FF5C7C;");
+                ? "-fx-text-fill: #00E5A0;"
+                : "-fx-text-fill: #FF5C7C;");
     }
 
     // ═════════════════════════════════════════════════════
     //  HANDLERS
     // ═════════════════════════════════════════════════════
-    @FXML private void onDiskonChanged() { updateSummary(); }
-    @FXML private void onTunaiChanged()  { updateSummary(); }
+    @FXML
+    private void onDiskonChanged() {
+        updateSummary();
+    }
 
-    @FXML private void onKosongkanKeranjang() {
+    @FXML
+    private void onTunaiChanged() {
+        updateSummary();
+    }
+
+    @FXML
+    private void onKosongkanKeranjang() {
         keranjang.clear();
         renderKeranjang();
         updateSummary();
     }
 
     // Metode bayar
-    @FXML private void onPayTunai() {
+    @FXML
+    private void onPayTunai() {
         metodeBayar = "TUNAI";
         btnTunai.getStyleClass().setAll("pay-method-active");
         btnQris.getStyleClass().setAll("pay-method");
@@ -495,7 +650,8 @@ public class TransaksiController implements Initializable {
         tunaiBox.setManaged(true);
     }
 
-    @FXML private void onPayQris() {
+    @FXML
+    private void onPayQris() {
         metodeBayar = "QRIS";
         btnQris.getStyleClass().setAll("pay-method-active");
         btnTunai.getStyleClass().setAll("pay-method");
@@ -504,7 +660,8 @@ public class TransaksiController implements Initializable {
         tunaiBox.setManaged(false);
     }
 
-    @FXML private void onPayDebit() {
+    @FXML
+    private void onPayDebit() {
         metodeBayar = "DEBIT";
         btnDebit.getStyleClass().setAll("pay-method-active");
         btnTunai.getStyleClass().setAll("pay-method");
@@ -514,23 +671,44 @@ public class TransaksiController implements Initializable {
     }
 
     // Quick nominal tunai
-    @FXML private void onQuick5()  { tfTunai.setText("5000");   updateSummary(); }
-    @FXML private void onQuick10() { tfTunai.setText("10000");  updateSummary(); }
-    @FXML private void onQuick20() { tfTunai.setText("20000");  updateSummary(); }
-    @FXML private void onQuick50() { tfTunai.setText("50000");  updateSummary(); }
+    @FXML
+    private void onQuick5() {
+        tfTunai.setText("5000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onQuick10() {
+        tfTunai.setText("10000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onQuick20() {
+        tfTunai.setText("20000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onQuick50() {
+        tfTunai.setText("50000");
+        updateSummary();
+    }
 
     // Proses bayar
     @FXML
     private void onProsesBayar() {
-        if (keranjang.isEmpty()) return;
+        if (keranjang.isEmpty()) {
+            return;
+        }
 
         // TODO: simpan ke database, cetak struk, dll.
         System.out.println("=== TRANSAKSI BERHASIL ===");
         System.out.println("No: #TRX-" + String.format("%04d", noTrx));
         System.out.println("Metode: " + metodeBayar);
-        keranjang.forEach((id, ci) ->
-            System.out.printf("  %s x%d = Rp %s%n",
-                ci.produk.nama, ci.qty, FMT.format(ci.subtotal())));
+        keranjang.forEach((id, ci)
+                -> System.out.printf("  %s x%d = Rp %s%n",
+                        ci.produk.nama, ci.qty, FMT.format(ci.subtotal())));
 
         // Reset
         noTrx++;
@@ -551,13 +729,19 @@ public class TransaksiController implements Initializable {
 
     // ── Helpers ───────────────────────────────────────────
     private double parseDouble(String s) {
-        try { return s == null || s.isBlank() ? 0 : Double.parseDouble(s.trim()); }
-        catch (NumberFormatException e) { return 0; }
+        try {
+            return s == null || s.isBlank() ? 0 : Double.parseDouble(s.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     private long parseLong(String s) {
-        try { return s == null || s.isBlank() ? 0 : Long.parseLong(s.trim()); }
-        catch (NumberFormatException e) { return 0; }
+        try {
+            return s == null || s.isBlank() ? 0 : Long.parseLong(s.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
-    
+
 }

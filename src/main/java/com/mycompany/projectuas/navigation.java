@@ -15,6 +15,7 @@ public class navigation {
             stage.setScene(new Scene(root));
             stage.show();
             stage.setMaximized(true);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -23,7 +24,16 @@ public class navigation {
     public void navigateToDashboard() {
         navigateTo("dashboard.fxml", "Dashboard");
     }
-    public void navigateToLogin() {
+    public void navigateToTransaksi() {
+        navigateTo("transaksi.fxml", "Transaksi");
+
+    }
+    public void navigateToLaporan() {
+        navigateTo("laporan.fxml", "Laporan");
+    }
+
+
+     public void navigateToLogin() {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
             Stage stage = new Stage();
@@ -34,12 +44,6 @@ public class navigation {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    public void navigateToTransaksi() {
-        navigateTo("transaksi.fxml", "Transaksi");  
-    }
-    public void navigateToLaporan() {
-        navigateTo("laporan.fxml", "Laporan");
     }
     
 }
