@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.Stack;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -20,7 +19,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Separator;
 import javafx.stage.Stage;
 
 public class DetailTransaksiController implements Initializable {
@@ -191,12 +189,9 @@ public class DetailTransaksiController implements Initializable {
         thSubtotal.setMinWidth(120);
         thSubtotal.setAlignment(Pos.CENTER_RIGHT);
 
-        // spacer untuk ganti tombol hapus
-        Label spacer = new Label();
-        spacer.setPrefWidth(30);
-        spacer.setMinWidth(30);
+       
 
-        HBox header = new HBox(12, thNo, thNama, thHarga, thQty, thSubtotal, spacer);
+        HBox header = new HBox(12, thNo, thNama, thHarga, thQty, thSubtotal);
         header.getStyleClass().add("table-header");
         header.setAlignment(Pos.CENTER_LEFT);
         return header;
@@ -244,17 +239,7 @@ public class DetailTransaksiController implements Initializable {
         lblSub.setMinWidth(120);
         lblSub.setAlignment(Pos.CENTER_RIGHT);
 
-        // Tombol hapus
-        Button btnHapus = new Button("✕");
-        btnHapus.getStyleClass().add("item-hapus");
-        btnHapus.setPrefWidth(30);
-        btnHapus.setMinWidth(30);
-        btnHapus.setOnAction(e -> {
-            listItem.remove(item);
-            renderList();
-        });
-
-        HBox row = new HBox(12, lblNo, namaBox, lblHarga, lblQty, lblSub, btnHapus);
+        HBox row = new HBox(12, lblNo, namaBox, lblHarga, lblQty, lblSub);
         row.getStyleClass().add("item-row");
         row.setAlignment(Pos.CENTER_LEFT);
         return row;
