@@ -7,11 +7,9 @@ package com.mycompany.projectuas;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -205,6 +203,7 @@ public class TransaksiController implements Initializable {
         nav.navigateToDashboard();
         Stage stage = (Stage) navDashboard.getScene().getWindow();
         stage.close();
+        data_transaksi.keranjang.clear();
 
     }
 
@@ -293,7 +292,7 @@ public class TransaksiController implements Initializable {
 
     // ── Data ─────────────────────────────────────────────
     private final List<Produk> semuaProduk = new ArrayList<>();
-    private final Map<Integer, CartItem> keranjang = new LinkedHashMap<>();
+
     private String metodeBayar = "TUNAI";
     private int noTrx = 1;
 
@@ -381,7 +380,7 @@ public class TransaksiController implements Initializable {
     // ═════════════════════════════════════════════════════
     // RENDER PRODUK CARDS
     // ═════════════════════════════════════════════════════
-    private void renderProduk(List<Produk> list) {
+    public void renderProduk(List<Produk> list) {
         flowProduk.getChildren().clear();
         for (Produk p : list) {
             flowProduk.getChildren().add(buildProdukCard(p));
@@ -513,27 +512,27 @@ public class TransaksiController implements Initializable {
     // KERANJANG
     // ═════════════════════════════════════════════════════
     private void tambahKeKeranjang(Produk p) {
-        if (keranjang.containsKey(p.id)) {
-            CartItem ci = keranjang.get(p.id);
+        if (data_transaksi.keranjang.containsKey(p.id)) {
+            CartItem ci = data_transaksi.keranjang.get(p.id);
             if (ci.qty < p.stok) {
                 ci.qty++;
             }
         } else {
-            keranjang.put(p.id, new CartItem(p));
+            data_transaksi.keranjang.put(p.id, new CartItem(p));
         }
         renderKeranjang();
         updateSummary();
     }
 
-    private void renderKeranjang() {
+    public void renderKeranjang() {
         vboxKeranjang.getChildren().clear();
-        boolean kosong = keranjang.isEmpty();
+        boolean kosong = data_transaksi.keranjang.isEmpty();
 
         emptyCart.setVisible(kosong);
         emptyCart.setManaged(kosong);
 
         int totalItem = 0;
-        for (CartItem ci : keranjang.values()) {
+        for (CartItem ci : data_transaksi.keranjang.values()) {
             totalItem += ci.qty;
             vboxKeranjang.getChildren().add(buildCartItem(ci));
         }
@@ -561,7 +560,7 @@ public class TransaksiController implements Initializable {
             if (ci.qty > 1) {
                 ci.qty--;
             } else {
-                keranjang.remove(ci.produk.id);
+                data_transaksi.keranjang.remove(ci.produk.id);
             }
             renderKeranjang();
             updateSummary();
@@ -592,7 +591,7 @@ public class TransaksiController implements Initializable {
         Button btnHapus = new Button("✕");
         btnHapus.getStyleClass().add("btn-hapus-item");
         btnHapus.setOnAction(e -> {
-            keranjang.remove(ci.produk.id);
+            data_transaksi.keranjang.remove(ci.produk.id);
             renderKeranjang();
             updateSummary();
         });
@@ -610,24 +609,24 @@ public class TransaksiController implements Initializable {
     // ═════════════════════════════════════════════════════
     // SUMMARY
     // ═════════════════════════════════════════════════════
-    private void updateSummary() {
-        long subtotal = keranjang.values().stream()
+    public void updateSummary() {
+        data_transaksi.subtotal = data_transaksi.keranjang.values().stream()
                 .mapToLong(CartItem::subtotal).sum();
 
-        double diskonPct = parseDouble(tfDiskon.getText());
-        long diskon = (long) (subtotal * diskonPct / 100.0);
-        long afterDiskon = subtotal - diskon;
+        double diskonPct = parseDouble(tfDiskon.getText().replace("[^0-9]", ""));
+        long diskon = (long) (data_transaksi.subtotal * diskonPct / 100.0);
+        long afterDiskon = data_transaksi.subtotal - diskon;
         long pajak = (long) (afterDiskon * 0.11);
-        long total = afterDiskon + pajak;
+        data_transaksi.total = afterDiskon + pajak;
 
-        lblSubtotal.setText("Rp " + FMT.format(subtotal));
+        lblSubtotal.setText("Rp " + FMT.format(data_transaksi.subtotal));
         lblDiskon.setText("- Rp " + FMT.format(diskon));
         lblPajak.setText("Rp " + FMT.format(pajak));
-        lblTotal.setText("Rp " + FMT.format(total));
+        lblTotal.setText("Rp " + FMT.format(data_transaksi.total));
 
         // Kembalian
         long tunai = parseLong(tfTunai.getText().replaceAll("[^0-9]", ""));
-        long kembalian = tunai - total;
+        long kembalian = tunai - data_transaksi.total;
         lblKembalian.setText(kembalian >= 0
                 ? "Rp " + FMT.format(kembalian)
                 : "Kurang Rp " + FMT.format(Math.abs(kembalian)));
@@ -646,12 +645,25 @@ public class TransaksiController implements Initializable {
 
     @FXML
     private void onTunaiChanged() {
+        if (isUpdating)
+            return;
+        isUpdating = true;
+        String raw = tfTunai.getText().replaceAll("[^0-9]", "");
+        if (raw.isEmpty()) {
+            tfTunai.setText("");
+            isUpdating = false;
+            updateSummary();
+        }
+        long value = Long.parseLong(raw);
+        tfTunai.setText("Rp " + FMT.format(value));
+        tfTunai.positionCaret(tfTunai.getText().length());
+        isUpdating = false;
         updateSummary();
     }
 
     @FXML
     private void onKosongkanKeranjang() {
-        keranjang.clear();
+        data_transaksi.keranjang.clear();
         renderKeranjang();
         updateSummary();
     }
@@ -676,6 +688,8 @@ public class TransaksiController implements Initializable {
         tunaiBox.setVisible(false);
         tunaiBox.setManaged(false);
     }
+
+    private boolean isUpdating = false;
 
     @FXML
     private void onPayDebit() {
@@ -715,14 +729,22 @@ public class TransaksiController implements Initializable {
     // Proses bayar
     @FXML
     private void onProsesBayar() {
-        if (keranjang.isEmpty()) {
+        if (data_transaksi.keranjang.isEmpty()) {
+            return;
+        }
+        if(tfTunai.getText().isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Peringatan");
+            alert.setHeaderText(null);
+            alert.setContentText("Silahkan isi Nominal Uang Pembayaran");
+            alert.showAndWait();
             return;
         }
 
-        CartItem ci = keranjang.values().iterator().next(); // ambil salah satu item untuk contoh
+        CartItem ci = data_transaksi.keranjang.values().iterator().next(); // ambil salah satu item untuk contoh
         String sqlTransaksi = String.format(
                 "INSERT INTO tb_transaksi (id_user, total, tanggal_transaksi, pelanggan) VALUES (%d, %d, NOW(), '%s')",
-                session.id_user, keranjang.values().stream().mapToLong(CartItem::subtotal).sum(), "");
+                session.id_user, data_transaksi.keranjang.values().stream().mapToLong(CartItem::subtotal).sum(), "");
 
         koneksi.eksekusiQuery(sqlTransaksi);
 
@@ -739,29 +761,24 @@ public class TransaksiController implements Initializable {
         System.out.println("=== TRANSAKSI BERHASIL ===");
         System.out.println("No: #TRX-" + String.format("%04d", noTrx));
         System.out.println("Metode: " + metodeBayar);
-        // keranjang.forEach((id, ci) -> System.out.printf("  %s x%d = Rp %s%n",
-        //         ci.produk.nama, ci.qty, FMT.format(ci.subtotal())));
+        // keranjang.forEach((id, ci) -> System.out.printf(" %s x%d = Rp %s%n",
+        // ci.produk.nama, ci.qty, FMT.format(ci.subtotal())));
 
         // Reset
-        noTrx++;
-        keranjang.clear();
+        // noTrx++;
+        // // data_transaksi.keranjang.clear();
         tfTunai.clear();
-        tfDiskon.clear();
-        renderKeranjang();
-        updateSummary();
-        lblNoTrx.setText(String.format("#TRX-%04d", noTrx));
+        // tfDiskon.clear();
+        // renderKeranjang();
+        // updateSummary();
+        // lblNoTrx.setText(String.format("#TRX-%04d", noTrx));
 
-        // // Tampilkan alert sukses
-        // Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        // alert.setTitle("Transaksi Berhasil");
-        // alert.setHeaderText(null);
-        // alert.setContentText("✅ Pembayaran berhasil diproses!");
-        // alert.showAndWait();
+        
 
         navigation nav = new navigation();
         Stage stage = (Stage) btnBayar.getScene().getWindow();
-        nav.detailTransaksi(stage);
-        
+        nav.detailTransaksi(stage,this);
+
     }
 
     // ── Helpers ───────────────────────────────────────────

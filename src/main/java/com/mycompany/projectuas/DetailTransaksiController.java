@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import com.mycompany.projectuas.TransaksiController.CartItem;
+
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -39,9 +42,28 @@ public class DetailTransaksiController implements Initializable {
     @FXML
     private Label lblTotal;
 
+    // --------------passing reference object
+    private TransaksiController transaksiController;
+
+    public void setTransaksiController(
+        TransaksiController transaksiController) {
+            this.transaksiController = transaksiController;
+    }
+
     // ── Data ──────────────────────────────────────────
     private static final NumberFormat FMT = NumberFormat.getInstance(
             new Locale("id", "ID"));
+    int id_transaksi = -1;
+
+    void idtransaksi() {
+        String sql_idtransaksi = "SELECT * FROM tb_transaksi ORDER BY id_transaksi DESC LIMIT 1";
+        List<Object[]> data = koneksi.ambilData(sql_idtransaksi);
+
+        if (!data.isEmpty()) {
+            Object[] row = data.get(0);
+            id_transaksi = ((Number) row[0]).intValue();
+        }
+    }
 
     // Model item transaksi
     static class ItemTransaksi {
@@ -71,37 +93,16 @@ public class DetailTransaksiController implements Initializable {
     // ═════════════════════════════════════════════════
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        loadDummyData();
+        idtransaksi();
         setupLayout();
         renderList();
+
+        if (!data_transaksi.keranjang.values().isEmpty()) {
+            System.out.println("data ada");
+        }
     }
 
     // ── Dummy data ────────────────────────────────────
-    private void loadDummyData() {
-        listItem.add(new ItemTransaksi("P01", "Indomie Goreng", "Makanan", 3_500, 3));
-        listItem.add(new ItemTransaksi("P02", "Aqua 600ml", "Minuman", 4_000, 2));
-        listItem.add(new ItemTransaksi("P03", "Teh Sosro", "Minuman", 5_000, 1));
-        listItem.add(new ItemTransaksi("P04", "Beng-Beng", "Snack", 4_000, 4));
-        listItem.add(new ItemTransaksi("P06", "Sabun Lifebuoy", "Kebersihan", 12_500, 1));
-        listItem.add(new ItemTransaksi("P07", "Sikat Gigi Pepsodent", "Kebersihan", 15_000, 1));
-        listItem.add(new ItemTransaksi("P08", "Shampoo Sunsilk", "Kebersihan", 25_000, 1));
-        listItem.add(new ItemTransaksi("P09", "Pasta Gigi Pepsodent", "Kebersihan", 10_000, 1));
-        listItem.add(new ItemTransaksi("P10", "Susu Dancow", "Minuman", 20_000, 2));
-        listItem.add(new ItemTransaksi("P11", "Susu Indomilk", "Minuman", 18_000, 1));
-        listItem.add(new ItemTransaksi("P12", "Susu Bear Brand", "Minuman", 22_000, 1));
-        listItem.add(new ItemTransaksi("P01", "Indomie Goreng", "Makanan", 3_500, 3));
-        listItem.add(new ItemTransaksi("P02", "Aqua 600ml", "Minuman", 4_000, 2));
-        listItem.add(new ItemTransaksi("P03", "Teh Sosro", "Minuman", 5_000, 1));
-        listItem.add(new ItemTransaksi("P04", "Beng-Beng", "Snack", 4_000, 4));
-        listItem.add(new ItemTransaksi("P06", "Sabun Lifebuoy", "Kebersihan", 12_500, 1));
-        listItem.add(new ItemTransaksi("P07", "Sikat Gigi Pepsodent", "Kebersihan", 15_000, 1));
-        listItem.add(new ItemTransaksi("P08", "Shampoo Sunsilk", "Kebersihan", 25_000, 1));
-        listItem.add(new ItemTransaksi("P09", "Pasta Gigi Pepsodent", "Kebersihan", 10_000, 1));
-        listItem.add(new ItemTransaksi("P10", "Susu Dancow", "Minuman", 20_000, 2));
-        listItem.add(new ItemTransaksi("P11", "Susu Indomilk", "Minuman", 18_000, 1));
-        listItem.add(new ItemTransaksi("P12", "Susu Bear Brand", "Minuman", 22_000, 1));
-
-    }
 
     // ── Setup layout scroll content ───────────────────
     private void setupLayout() {
@@ -120,7 +121,7 @@ public class DetailTransaksiController implements Initializable {
     private void renderList() {
         detailList.getChildren().clear();
 
-        if (listItem.isEmpty()) {
+        if (data_transaksi.keranjang.isEmpty()) {
             // Empty state
             VBox empty = new VBox(8);
             empty.setAlignment(Pos.CENTER);
@@ -145,8 +146,10 @@ public class DetailTransaksiController implements Initializable {
         detailList.getChildren().add(buildTableHeader());
 
         // Item rows
-        for (int i = 0; i < listItem.size(); i++) {
-            detailList.getChildren().add(buildItemRow(listItem.get(i), i + 1));
+        int no = 1;
+        for (CartItem ci : data_transaksi.keranjang.values()) {
+            detailList.getChildren().add(setdatatransaksi(ci, no));
+            no++;
         }
 
         // Summary
@@ -189,16 +192,13 @@ public class DetailTransaksiController implements Initializable {
         thSubtotal.setMinWidth(120);
         thSubtotal.setAlignment(Pos.CENTER_RIGHT);
 
-       
-
         HBox header = new HBox(12, thNo, thNama, thHarga, thQty, thSubtotal);
         header.getStyleClass().add("table-header");
         header.setAlignment(Pos.CENTER_LEFT);
         return header;
     }
 
-    // ── Item row ──────────────────────────────────────
-    private HBox buildItemRow(ItemTransaksi item, int no) {
+    private HBox setdatatransaksi(CartItem ci, int no) {
         // No urut
         Label lblNo = new Label(String.valueOf(no));
         lblNo.getStyleClass().add("item-no");
@@ -207,10 +207,10 @@ public class DetailTransaksiController implements Initializable {
         lblNo.setAlignment(Pos.CENTER);
 
         // Nama + kategori
-        Label lblNama = new Label(item.nama);
+        Label lblNama = new Label(ci.produk.nama);
         lblNama.getStyleClass().add("item-nama");
 
-        Label lblKat = new Label(item.kategori);
+        Label lblKat = new Label(ci.produk.kategori);
         lblKat.getStyleClass().add("item-kategori");
 
         VBox namaBox = new VBox(2, lblNama, lblKat);
@@ -219,21 +219,21 @@ public class DetailTransaksiController implements Initializable {
         namaBox.setMaxWidth(Double.MAX_VALUE);
 
         // Harga satuan
-        Label lblHarga = new Label("Rp " + FMT.format(item.harga));
+        Label lblHarga = new Label("Rp " + FMT.format(ci.produk.harga));
         lblHarga.getStyleClass().add("item-harga");
         lblHarga.setPrefWidth(130);
         lblHarga.setMinWidth(130);
         lblHarga.setAlignment(Pos.CENTER_RIGHT);
 
         // Qty
-        Label lblQty = new Label("x" + item.qty);
+        Label lblQty = new Label("x" + ci.qty);
         lblQty.getStyleClass().add("item-qty");
         lblQty.setPrefWidth(60);
         lblQty.setMinWidth(60);
         lblQty.setAlignment(Pos.CENTER);
 
         // Subtotal
-        Label lblSub = new Label("Rp " + FMT.format(item.subtotal()));
+        Label lblSub = new Label("Rp " + FMT.format(ci.produk.harga * ci.qty));
         lblSub.getStyleClass().add("item-subtotal");
         lblSub.setPrefWidth(120);
         lblSub.setMinWidth(120);
@@ -242,19 +242,24 @@ public class DetailTransaksiController implements Initializable {
         HBox row = new HBox(12, lblNo, namaBox, lblHarga, lblQty, lblSub);
         row.getStyleClass().add("item-row");
         row.setAlignment(Pos.CENTER_LEFT);
-        return row;
+
+        return new HBox(12, lblNo, namaBox, lblHarga, lblQty, lblSub);
     }
+
+    // ── Item row ──────────────────────────────────────
 
     // ── Summary ───────────────────────────────────────
     private void updateSummary() {
-        long subtotal = listItem.stream()
-                .mapToLong(ItemTransaksi::subtotal).sum();
-        long pajak = (long) (subtotal * 0.11);
-        long total = subtotal + pajak;
+        // data_transaksi.subtotal = listItem.stream()
+        // .mapToLong(ItemTransaksi::subtotal).sum();
+        long pajak = (long) (data_transaksi.subtotal * 0.11);
+        // long total = data_transaksi.subtotal + pajak;
 
-        lblSubtotal.setText("Rp " + FMT.format(subtotal));
+        lblSubtotal.setText("Rp " + FMT.format(data_transaksi.subtotal));
         lblPajak.setText("Rp " + FMT.format(pajak));
-        lblTotal.setText("Rp " + FMT.format(total));
+        lblTotal.setText("Rp " + FMT.format(data_transaksi.total));
+        Label lbel_total = new Label("Total");
+
     }
 
     private HBox buildSummaryRow(String key, String value, boolean isDiskon) {
@@ -294,6 +299,15 @@ public class DetailTransaksiController implements Initializable {
         }
         // method helper untuk tutup form
 
+        for (CartItem ci : data_transaksi.keranjang.values()) {
+            String sql_dtransaksi = "INSERT INTO tb_detail_transaksi (id_transaksi,id_barang,jumlah,harga) VALUES ('"
+                    + id_transaksi + "','" + ci.produk.id + "','" + ci.qty + "','" + ci.produk.harga + "')";
+            koneksi.eksekusiQuery(sql_dtransaksi);
+        }
+        String sql_update_pelanggan = "UPDATE tb_transaksi SET pelanggan = '" + pelanggan + "' WHERE id_transaksi = '"
+                + id_transaksi + "'";
+        koneksi.eksekusiQuery(sql_update_pelanggan);
+
         // TODO: simpan ke database
         System.out.println("=== SIMPAN TRANSAKSI ===");
         System.out.println("Pelanggan: " + pelanggan);
@@ -305,6 +319,10 @@ public class DetailTransaksiController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText("✅ Transaksi berhasil disimpan!");
         alert.showAndWait();
+
+        data_transaksi.keranjang.clear();
+        transaksiController.renderKeranjang();
+        transaksiController.updateSummary();
         closeForm(btnSimpan);
     }
 
@@ -315,13 +333,13 @@ public class DetailTransaksiController implements Initializable {
         confirm.setHeaderText(null);
         confirm.setContentText("Yakin ingin membatalkan transaksi?");
         confirm.showAndWait().ifPresent(response -> {
-            if (response.getButtonData().isDefaultButton()) {
-                listItem.clear();
+            if (response == ButtonType.OK) {
                 tfPelanggan.clear();
                 renderList();
+                closeForm(btnBatal);
+                String sql_hapus_transaksi = "DELETE FROM tb_transaksi WHERE id_transaksi = '" + id_transaksi + "'";
+                koneksi.eksekusiQuery(sql_hapus_transaksi);
             }
         });
-        closeForm(btnBatal);
-
     }
 }

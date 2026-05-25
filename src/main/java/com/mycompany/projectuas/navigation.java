@@ -1,17 +1,8 @@
 package com.mycompany.projectuas;
 
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
-import javafx.scene.control.Alert;
-import javafx.animation.Timeline;
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
-import javafx.util.Duration;
 import java.awt.Toolkit;
+
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -65,26 +56,24 @@ public class navigation {
         }
     }
 
-    public void detailTransaksi(Stage ownerStage) {
-        try {
-            Parent root = FXMLLoader.load(
-                    getClass().getResource("/fxml/detail_transaksi.fxml"));
+    public void detailTransaksi(
+            Stage ownerStage,
+            TransaksiController transaksiController) {
 
+        try {
+
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/detail_transaksi.fxml"));
+            Parent root = loader.load();
+            DetailTransaksiController controller = loader.getController();
+            controller.setTransaksiController(transaksiController);
             Stage stage = new Stage();
             stage.setTitle("Detail Transaksi");
             stage.setScene(new Scene(root));
-
-            // ── INI KUNCINYA ──────────────────────────────
-            // Modality = form ini harus diselesaikan dulu
-            // WINDOW_MODAL = blokir hanya parent window-nya
-            stage.initModality(javafx.stage.Modality.WINDOW_MODAL);
-            stage.initOwner(ownerStage); // ← tahu siapa parent-nya
-
-            // Cegah close pakai tombol X
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(ownerStage);
             stage.setOnCloseRequest(event -> {
-                // batalkan close
                 event.consume();
-                // jalankan efek shake + suara
                 shakeStage(stage);
             });
 
