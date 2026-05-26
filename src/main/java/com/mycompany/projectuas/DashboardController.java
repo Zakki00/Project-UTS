@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Stage;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
@@ -238,6 +239,8 @@ public class DashboardController implements Initializable {
         setActiveNav(navKasir);
         navigation nav = new navigation();
         nav.navigateToTransaksi();
+        Stage stage = (Stage) navKasir.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
