@@ -160,9 +160,6 @@ public class PiutangController implements Initializable {
             this.nama_barang = nama_barang;
             this.harga_barang = harga_barang;
             this.qty = qty;
-        
-            this.harga_barang = harga_barang;
-            this.qty = qty;
         }
 
     }
@@ -188,6 +185,7 @@ public class PiutangController implements Initializable {
 
         int rowNo = 1;
         List<Object[]> results = koneksi.ambilData(sql);
+        dataHutang.clear();
         for (Object[] row : results) {
 
             String idTransaksi = (String) row[0];
