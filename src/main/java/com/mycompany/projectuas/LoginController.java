@@ -19,12 +19,11 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
- * LoginController Package : com.mycompany.projectuas FXML :
- * resources/fxml/login.fxml
+ * LoginController Package : com.mycompany.projectuas FXML : resources/fxml/login.fxml
  */
 public class LoginController implements Initializable {
     session session = new session();
-    
+
     @FXML
     private TextField usernameField;
     @FXML
@@ -54,9 +53,7 @@ public class LoginController implements Initializable {
     @FXML
     private void handleLogin(ActionEvent event) {
         String username = usernameField.getText().trim();
-        String password = showingPassword
-                ? passwordVisible.getText()
-                : passwordField.getText();
+        String password = showingPassword ? passwordVisible.getText() : passwordField.getText();
         String query = "SELECT * FROM tb_user WHERE username = '" + username + "' AND password = '" + password + "'";
         List<Object[]> result = koneksi.ambilData(query);
         if (username.isEmpty() || password.isEmpty()) {
@@ -111,8 +108,6 @@ public class LoginController implements Initializable {
         showAlert(Alert.AlertType.INFORMATION, "Lupa Password",
                 "Silakan hubungi administrator untuk mereset password Anda.");
     }
-
-   
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);

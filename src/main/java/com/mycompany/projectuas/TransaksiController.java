@@ -153,11 +153,9 @@ public class TransaksiController implements Initializable {
 
         // Animasi lebar sidebar
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                        new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
+                new KeyFrame(Duration.ZERO, new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
                         new KeyValue(sidebar.minWidthProperty(), sidebar.getMinWidth())),
-                new KeyFrame(Duration.millis(350),
-                        new KeyValue(sidebar.prefWidthProperty(), targetWidth),
+                new KeyFrame(Duration.millis(350), new KeyValue(sidebar.prefWidthProperty(), targetWidth),
                         new KeyValue(sidebar.minWidthProperty(), targetWidth)));
 
         // Sembunyikan / tampilkan teks dengan fade
@@ -268,9 +266,8 @@ public class TransaksiController implements Initializable {
     }
 
     private void setNavLabelsVisible(boolean visible) {
-        List<Label> labels = List.of(
-                navLblDashboard, navLblProduk, navLblKasir,
-                navLblPelanggan, navLblLaporan, navLblPiutang, navLblPengaturan);
+        List<Label> labels = List.of(navLblDashboard, navLblProduk, navLblKasir, navLblPelanggan, navLblLaporan,
+                navLblPiutang, navLblPengaturan);
         for (Label lbl : labels) {
             lbl.setVisible(visible);
             lbl.setManaged(visible);
@@ -282,9 +279,8 @@ public class TransaksiController implements Initializable {
         Insets normalPad = new Insets(10, 14, 10, 0);
         Insets pad = collapsed ? collapsedPad : normalPad;
 
-        List<HBox> items = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        List<HBox> items = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
+                navPengaturan);
         for (HBox item : items) {
             item.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
             item.setPadding(pad);
@@ -292,9 +288,8 @@ public class TransaksiController implements Initializable {
     }
 
     private void setActiveNav(HBox selected) {
-        List<HBox> all = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        List<HBox> all = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
+                navPengaturan);
         for (HBox item : all) {
             item.getStyleClass().removeAll("nav-active");
         }
@@ -308,8 +303,7 @@ public class TransaksiController implements Initializable {
     private String metodeBayar = "TUNAI";
     private int noTrx = 1;
 
-    private static final NumberFormat FMT = NumberFormat.getInstance(
-            new Locale("id", "ID"));
+    private static final NumberFormat FMT = NumberFormat.getInstance(new Locale("id", "ID"));
 
     // ── Model ─────────────────────────────────────────────
     static class Produk {
@@ -625,8 +619,7 @@ public class TransaksiController implements Initializable {
     long tunai;
 
     public void updateSummary() {
-        data_transaksi.subtotal = data_transaksi.keranjang.values().stream()
-                .mapToLong(CartItem::subtotal).sum();
+        data_transaksi.subtotal = data_transaksi.keranjang.values().stream().mapToLong(CartItem::subtotal).sum();
 
         double diskonPct = parseDouble(tfDiskon.getText().replace("[^0-9]", ""));
         long diskon = (long) (data_transaksi.subtotal * diskonPct / 100.0);
@@ -642,12 +635,9 @@ public class TransaksiController implements Initializable {
         // Kembalian
         tunai = parseLong(tfTunai.getText().replaceAll("[^0-9]", ""));
         kembalian = tunai - data_transaksi.total;
-        lblKembalian.setText(kembalian >= 0
-                ? "Kembalian Rp " + FMT.format(kembalian)
+        lblKembalian.setText(kembalian >= 0 ? "Kembalian Rp " + FMT.format(kembalian)
                 : "Kurang Rp " + FMT.format(Math.abs(kembalian)));
-        lblKembalian.setStyle(kembalian >= 0
-                ? "-fx-text-fill: #00E5A0;"
-                : "-fx-text-fill: #FF5C7C;");
+        lblKembalian.setStyle(kembalian >= 0 ? "-fx-text-fill: #00E5A0;" : "-fx-text-fill: #FF5C7C;");
     }
 
     // ═════════════════════════════════════════════════════
@@ -759,44 +749,28 @@ public class TransaksiController implements Initializable {
         CartItem ci = data_transaksi.keranjang.values().iterator().next(); // ambil salah satu item untuk contoh
         if (kembalian >= 0) {
 
-            String sqlTransaksi = String.format(
-                    "INSERT INTO tb_transaksi " +
-                            "(id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
-                            +
-                            "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
+            String sqlTransaksi = String.format("INSERT INTO tb_transaksi "
+                    + "(id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
+                    + "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
 
-                    session.id_user,
-                    data_transaksi.total,
-                    tunai,
-                    kembalian,
-                    0,
-                    "Lunas",
-                    "");
+                    session.id_user, data_transaksi.total, tunai, kembalian, 0, "Lunas", "");
 
             koneksi.eksekusiQuery(sqlTransaksi);
 
         } else {
 
-            String sqlTransaksi = String.format(
-                    "INSERT INTO tb_transaksi " +
-                            "(id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
-                            +
-                            "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
+            String sqlTransaksi = String.format("INSERT INTO tb_transaksi "
+                    + "(id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
+                    + "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
 
-                    session.id_user,
-                    data_transaksi.total,
-                    tunai,
-                    0,
-                    Math.abs(kembalian),
-                    "Belum Lunas",
-                    "");
+                    session.id_user, data_transaksi.total, tunai, 0, Math.abs(kembalian), "Belum Lunas", "");
 
             koneksi.eksekusiQuery(sqlTransaksi);
         }
 
         // Update stok di database
-        String sqlUpdateStok = String.format("UPDATE tb_barang SET stok = stok - %d WHERE id_barang = %d",
-                ci.qty, ci.produk.id);
+        String sqlUpdateStok = String.format("UPDATE tb_barang SET stok = stok - %d WHERE id_barang = %d", ci.qty,
+                ci.produk.id);
         koneksi.eksekusiQuery(sqlUpdateStok);
 
         semuaProduk.clear();

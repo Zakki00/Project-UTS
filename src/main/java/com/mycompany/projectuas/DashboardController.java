@@ -138,11 +138,9 @@ public class DashboardController implements Initializable {
         sidebarCollapsed = !sidebarCollapsed;
         double targetWidth = sidebarCollapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                        new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
+                new KeyFrame(Duration.ZERO, new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
                         new KeyValue(sidebar.minWidthProperty(), sidebar.getMinWidth())),
-                new KeyFrame(Duration.millis(350),
-                        new KeyValue(sidebar.prefWidthProperty(), targetWidth),
+                new KeyFrame(Duration.millis(350), new KeyValue(sidebar.prefWidthProperty(), targetWidth),
                         new KeyValue(sidebar.minWidthProperty(), targetWidth)));
         if (sidebarCollapsed) {
             hideSidebarText();
@@ -162,7 +160,7 @@ public class DashboardController implements Initializable {
             toggleBtn.setText("◀");
         }
         updateNavPadding(sidebarCollapsed);
-        timeline.play(); 
+        timeline.play();
     }
 
     private void hideSidebarText() {
@@ -182,9 +180,8 @@ public class DashboardController implements Initializable {
     }
 
     private void setNavLabelsVisible(boolean visible) {
-        List<Label> labels = List.of(
-                navLblDashboard, navLblProduk, navLblKasir,
-                navLblPelanggan, navLblLaporan, navLblPengaturan);
+        List<Label> labels = List.of(navLblDashboard, navLblProduk, navLblKasir, navLblPelanggan, navLblLaporan,
+                navLblPengaturan);
         for (Label lbl : labels) {
             lbl.setVisible(visible);
             lbl.setManaged(visible);
@@ -196,9 +193,7 @@ public class DashboardController implements Initializable {
         Insets normalPad = new Insets(10, 14, 10, 0);
         Insets pad = collapsed ? collapsedPad : normalPad;
 
-        List<HBox> items = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPengaturan);
+        List<HBox> items = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPengaturan);
         for (HBox item : items) {
             item.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
             item.setPadding(pad);
@@ -240,8 +235,9 @@ public class DashboardController implements Initializable {
         navigation nav = new navigation();
         nav.navigateToLaporan();
     }
+
     @FXML
-    private void onNavPiutang(){
+    private void onNavPiutang() {
         setActiveNav(navPiutang);
         navigation nav = new navigation();
         nav.navigateToPiutang();
@@ -256,9 +252,7 @@ public class DashboardController implements Initializable {
     }
 
     private void setActiveNav(HBox selected) {
-        List<HBox> all = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPengaturan);
+        List<HBox> all = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPengaturan);
         for (HBox item : all) {
             item.getStyleClass().removeAll("nav-active");
             if (!item.getStyleClass().contains("nav-item"))
@@ -268,9 +262,7 @@ public class DashboardController implements Initializable {
     }
 
     private void setupNavHover() {
-        List<HBox> all = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPengaturan);
+        List<HBox> all = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPengaturan);
         for (HBox item : all) {
             item.setOnMouseEntered(e -> item.setStyle("-fx-background-color: #252840; -fx-background-radius: 10;"));
             item.setOnMouseExited(e -> item.setStyle(""));
@@ -410,10 +402,8 @@ public class DashboardController implements Initializable {
     }
 
     private void setupStockList() {
-        List<StockItem> items = List.of(
-                new StockItem("Minyak Goreng", 3, 50, "Kritis"),
-                new StockItem("Teh Botol Sosro", 12, 100, "Menipis"),
-                new StockItem("Gula Pasir", 8, 40, "Kritis"),
+        List<StockItem> items = List.of(new StockItem("Minyak Goreng", 3, 50, "Kritis"),
+                new StockItem("Teh Botol Sosro", 12, 100, "Menipis"), new StockItem("Gula Pasir", 8, 40, "Kritis"),
                 new StockItem("Kopi Kapal Api", 18, 80, "Menipis"));
 
         for (StockItem si : items) {

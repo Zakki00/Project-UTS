@@ -80,6 +80,25 @@ public class PiutangController implements Initializable {
     @FXML
     private Label navLblPengaturan;
 
+    // ── Topbar ───────────────────────────────────────────
+    @FXML
+    private Label kpiTotalPiutang;
+
+    @FXML
+    private Label kpiJumlahTransaksi;
+
+    @FXML
+    private Label kpiHariIni;
+
+    @FXML
+    private Label lblDeltaPiutang;
+
+    @FXML
+    private Label lblDeltaTransaksi;
+
+    @FXML
+    private Label lblDeltaHariIni;
+
     // ── FXML refs ──────────────────────────────────
     @FXML
     private TextField tfPelanggan;
@@ -116,29 +135,14 @@ public class PiutangController implements Initializable {
     private Button btnBatal;
 
     // ── Data ───────────────────────────────────────
-    private static final NumberFormat FMT = NumberFormat.getInstance(
-            new Locale("id", "ID"));
+    private static final NumberFormat FMT = NumberFormat.getInstance(new Locale("id", "ID"));
 
-    // Model
-    // static class BarangItem {
-    // String no, nama;
-    // long harga;
-    // int qty;
-    // BarangItem(String no, String nama, long harga, int qty) {
-    // this.no = no;
-    // this.nama = nama;
-    // this.harga = harga;
-    // this.qty = qty;
-    // }
-    // long subtotal() {
-    // return harga * qty;
-    // }
-    // }
     // ---------prepare data hutang dari database----------------
     private final ObservableList<DataHutang> dataHutang = FXCollections.observableArrayList();
     private final static List<DataBarang> dataBarang = new ArrayList<>();
 
     static class DataHutang {
+
         int no;
         String idTransaksi;
         String namaPelanggan;
@@ -148,14 +152,8 @@ public class PiutangController implements Initializable {
         String status_pembayaran;
         String tanggal_transaksi;
 
-        DataHutang(int no,
-                String idTransaksi,
-                String namaPelanggan,
-                Long total_pembayaran,
-                Long uang_pembayaran,
-                long kekurangan,
-                String status_pembayaran,
-                String tanggal_transaksi) {
+        DataHutang(int no, String idTransaksi, String namaPelanggan, Long total_pembayaran, Long uang_pembayaran,
+                long kekurangan, String status_pembayaran, String tanggal_transaksi) {
             this.no = no;
             this.idTransaksi = idTransaksi;
             this.namaPelanggan = namaPelanggan;
@@ -170,6 +168,7 @@ public class PiutangController implements Initializable {
     }
 
     static class DataBarang {
+
         String nama_barang;
         long harga_barang;
         int qty;
@@ -184,24 +183,15 @@ public class PiutangController implements Initializable {
     // -------------------ambil data hutang dari database----------------
     private void load_data_hutang(String namapelanggan) {
 
-        String sql = "SELECT "
-                + "t.id_transaksi, "
-                + "t.pelanggan AS nama_pelanggan, "
-                + "t.total_pembayaran, "
-                + "t.uang_pembayaran, "
-                + "t.kekurangan, "
-                + "t.status_pembayaran, "
-                + "t.tanggal_transaksi "
-                + "FROM tb_transaksi t "
-                + "WHERE t.status_pembayaran = 'Belum Lunas' "
-                + "AND t.pelanggan LIKE '%" + namapelanggan + "%'";
+        String sql = "SELECT " + "t.id_transaksi, " + "t.pelanggan AS nama_pelanggan, " + "t.total_pembayaran, "
+                + "t.uang_pembayaran, " + "t.kekurangan, " + "t.status_pembayaran, " + "t.tanggal_transaksi "
+                + "FROM tb_transaksi t " + "WHERE t.status_pembayaran = 'Belum Lunas' " + "AND t.pelanggan LIKE '%"
+                + namapelanggan + "%'";
 
         int rowNo = 1;
 
         List<Object[]> results = koneksi.ambilData(sql);
-
-        dataHutang.clear();
-
+        System.out.println("Hasil query Data Hutang: " + results.size() + " baris");
         for (Object[] row : results) {
 
             String idTransaksi = String.valueOf(row[0]);
@@ -212,30 +202,17 @@ public class PiutangController implements Initializable {
             String status = String.valueOf(row[5]);
             String tanggal = String.valueOf(row[6]);
 
-            dataHutang.add(new DataHutang(
-                    rowNo++,
-                    idTransaksi,
-                    namaPelanggan,
-                    totalPembayaran,
-                    uangPembayaran,
-                    kekurangan,
-                    status,
-                    tanggal));
+            dataHutang.add(new DataHutang(rowNo++, idTransaksi, namaPelanggan, totalPembayaran, uangPembayaran,
+                    kekurangan, status, tanggal));
         }
     }
 
     private void load_data_barang(DataHutang dataHutang) {
-        String sql = "SELECT "
-                + "b.nama_barang, "
-                + "b.harga, "
-                + "td.jumlah "
-                + "FROM tb_detail_transaksi td "
-                + "JOIN tb_barang b "
-                + "ON td.id_barang = b.id_barang "
-                + "WHERE td.id_transaksi = '"
+        String sql = "SELECT " + "b.nama_barang, " + "b.harga, " + "td.jumlah " + "FROM tb_detail_transaksi td "
+                + "JOIN tb_barang b " + "ON td.id_barang = b.id_barang " + "WHERE td.id_transaksi = '"
                 + dataHutang.idTransaksi + "'";
         List<Object[]> results = koneksi.ambilData(sql);
-        dataBarang.clear();
+        System.out.println("Hasil query barang: " + results.size() + " baris");
         for (Object[] row : results) {
             String nama = String.valueOf(row[0]);
             long harga = ((Number) row[1]).longValue();
@@ -267,6 +244,7 @@ public class PiutangController implements Initializable {
         setupLayout();
         SetupRowClick();
         renderList();
+        loadKPI();
     }
 
     // ═════════════════════════════════════════════════════
@@ -277,11 +255,9 @@ public class PiutangController implements Initializable {
         sidebarCollapsed = !sidebarCollapsed;
         double targetWidth = sidebarCollapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                        new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
+                new KeyFrame(Duration.ZERO, new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
                         new KeyValue(sidebar.minWidthProperty(), sidebar.getMinWidth())),
-                new KeyFrame(Duration.millis(350),
-                        new KeyValue(sidebar.prefWidthProperty(), targetWidth),
+                new KeyFrame(Duration.millis(350), new KeyValue(sidebar.prefWidthProperty(), targetWidth),
                         new KeyValue(sidebar.minWidthProperty(), targetWidth)));
         if (sidebarCollapsed) {
             hideSidebarText();
@@ -321,9 +297,8 @@ public class PiutangController implements Initializable {
     }
 
     private void setNavLabelsVisible(boolean visible) {
-        List<Label> labels = List.of(
-                navLblDashboard, navLblProduk, navLblKasir,
-                navLblPelanggan, navLblLaporan, navLblPiutang, navLblPengaturan);
+        List<Label> labels = List.of(navLblDashboard, navLblProduk, navLblKasir, navLblPelanggan, navLblLaporan,
+                navLblPiutang, navLblPengaturan);
         for (Label lbl : labels) {
             lbl.setVisible(visible);
             lbl.setManaged(visible);
@@ -335,9 +310,8 @@ public class PiutangController implements Initializable {
         Insets normalPad = new Insets(10, 14, 10, 0);
         Insets pad = collapsed ? collapsedPad : normalPad;
 
-        List<HBox> items = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        List<HBox> items = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
+                navPengaturan);
         for (HBox item : items) {
             item.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
             item.setPadding(pad);
@@ -396,9 +370,8 @@ public class PiutangController implements Initializable {
     }
 
     private void setActiveNav(HBox selected) {
-        List<HBox> all = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        List<HBox> all = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
+                navPengaturan);
         for (HBox item : all) {
             item.getStyleClass().removeAll("nav-active");
             if (!item.getStyleClass().contains("nav-item")) {
@@ -409,9 +382,8 @@ public class PiutangController implements Initializable {
     }
 
     private void setupNavHover() {
-        List<HBox> all = List.of(
-                navDashboard, navProduk, navKasir,
-                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        List<HBox> all = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
+                navPengaturan);
         for (HBox item : all) {
             item.setOnMouseEntered(e -> item.setStyle("-fx-background-color: #252840; -fx-background-radius: 10;"));
             item.setOnMouseExited(e -> item.setStyle(""));
@@ -431,94 +403,174 @@ public class PiutangController implements Initializable {
 
         tableHutang.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
+    // ═══════════════════════════════════════════════
+    // LOAD DATA KPI
+    private void loadKPI() {
+
+        String sql = "SELECT "
+                + "SUM(CASE "
+                + "WHEN status_pembayaran = 'Belum Lunas' "
+                + "THEN kekurangan ELSE 0 END) AS total_piutang, "
+
+                + "COUNT(CASE "
+                + "WHEN status_pembayaran = 'Belum Lunas' "
+                + "THEN 1 END) AS jumlah_transaksi, "
+
+                + "SUM(CASE "
+                + "WHEN status_pembayaran = 'Belum Lunas' "
+                + "AND DATE(tanggal_transaksi) = CURDATE() "
+                + "THEN 1 ELSE 0 END) AS transaksi_hari_ini, "
+
+                // total piutang kemarin
+                + "SUM(CASE "
+                + "WHEN status_pembayaran = 'Belum Lunas' "
+                + "AND DATE(tanggal_transaksi) = CURDATE() - INTERVAL 1 DAY "
+                + "THEN kekurangan ELSE 0 END) AS piutang_kemarin, "
+
+                // transaksi kemarin
+                + "COUNT(CASE "
+                + "WHEN status_pembayaran = 'Belum Lunas' "
+                + "AND DATE(tanggal_transaksi) = CURDATE() - INTERVAL 1 DAY "
+                + "THEN 1 END) AS transaksi_kemarin "
+
+                + "FROM tb_transaksi";
+
+        List<Object[]> results = koneksi.ambilData(sql);
+
+        if (!results.isEmpty()) {
+
+            Object[] row = results.get(0);
+
+            long totalPiutang = row[0] != null
+                    ? ((Number) row[0]).longValue()
+                    : 0;
+
+            int jumlahTransaksi = row[1] != null
+                    ? ((Number) row[1]).intValue()
+                    : 0;
+
+            int transaksiHariIni = row[2] != null
+                    ? ((Number) row[2]).intValue()
+                    : 0;
+
+            long piutangKemarin = row[3] != null
+                    ? ((Number) row[3]).longValue()
+                    : 0;
+
+            int transaksiKemarin = row[4] != null
+                    ? ((Number) row[4]).intValue()
+                    : 0;
+
+            // ================= KPI VALUE =================
+
+            kpiTotalPiutang.setText(
+                    "Rp " + FMT.format(totalPiutang));
+
+            kpiJumlahTransaksi.setText(
+                    String.valueOf(jumlahTransaksi));
+
+            kpiHariIni.setText(
+                    String.valueOf(transaksiHariIni));
+
+            // ================= DELTA =================
+
+            setDeltaLabel(
+                    lblDeltaPiutang,
+                    totalPiutang,
+                    piutangKemarin);
+
+            setDeltaLabel(
+                    lblDeltaTransaksi,
+                    jumlahTransaksi,
+                    transaksiKemarin);
+
+            setDeltaLabel(
+                    lblDeltaHariIni,
+                    transaksiHariIni,
+                    transaksiKemarin);
+        }
+    }
+
+    private void setDeltaLabel(Label label,
+            double today,
+            double yesterday) {
+
+        if (yesterday == 0) {
+
+            label.setText("▲ 100% vs kemarin");
+            label.getStyleClass().removeAll(
+                    "kpi-delta-up",
+                    "kpi-delta-down");
+
+            label.getStyleClass().add("kpi-delta-up");
+            return;
+        }
+
+        double percent = ((today - yesterday) / yesterday) * 100;
+
+        String arrow = percent >= 0 ? "▲" : "▼";
+
+        String text = arrow + " "
+                + String.format("%.0f", Math.abs(percent))
+                + "% vs kemarin";
+
+        label.setText(text);
+
+        label.getStyleClass().removeAll(
+                "kpi-delta-up",
+                "kpi-delta-down");
+
+        label.getStyleClass().add(
+                percent >= 0
+                        ? "kpi-delta-up"
+                        : "kpi-delta-down");
+    }
 
     // ═══════════════════════════════════════════════
-    // HANDLERS
-    // ═══════════════════════════════════════════════
+    // LOAD DATA & RENDER
+
     @FXML
     private void onLunas() {
+        String sql = "UPDATE tb_transaksi SET status_pembayaran = 'Lunas', kembalian = "
+                + lblKembalian.getText().replaceAll("[^0-9]", "") + " WHERE id_transaksi = '" + lblIdTransaksi.getText()
+                + "'";
+        koneksi.eksekusiQuery(sql);
+        System.out.println(
+                "Transaksi " + lblIdTransaksi.getText() + " ditandai LUNAS dengan kembalian " + lblKembalian.getText());
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Konfirmasi Lunas");
         confirm.setHeaderText(null);
         confirm.setContentText("Tandai transaksi ini sebagai LUNAS?");
+        dataBarang.clear();
         confirm.showAndWait().ifPresent(response -> {
-            if (response.getButtonData().isDefaultButton()) {
-                // TODO: update status di database
-                System.out.println("Transaksi "
-                        + lblIdTransaksi.getText() + " ditandai LUNAS");
-                closeForm();
+            if (response == javafx.scene.control.ButtonType.OK) {
+                load_data_hutang(tfPelanggan.getText());
+                renderList();
+                updateSummary();
+                setupTable();
+                loadKPI();
             }
         });
+
     }
 
     @FXML
     private void onBatal() {
-        closeForm();
-    }
-
-    private void closeForm() {
-        if (myStage != null) {
-            myStage.setOnCloseRequest(null);
-            myStage.close();
-        } else {
-            // fallback kalau myStage tidak di-set
-            Stage stage = (Stage) btnBatal.getScene().getWindow();
-            stage.setOnCloseRequest(null);
-            stage.close();
-        }
-    }
-
-    // ═════════════════════════════════════════════════════
-    // OTHER HANDLERS
-    // ═════════════════════════════════════════════════════
-    @FXML
-    private void onNotif() {
-        System.out.println("Notifikasi dibuka");
-    }
-
-    @FXML
-    private void onLihatSemua() {
-        System.out.println("Lihat semua transaksi");
+        dataBarang.clear();
+        renderList();
     }
 
     long kembalian;
     long tunai;
 
     public void updateSummary() {
-
+        DataHutang selected = tableHutang.getSelectionModel().getSelectedItem();
         // Kembalian
         tunai = parseLong(tfTunai.getText().replaceAll("[^0-9]", ""));
-        kembalian = tunai - data_transaksi.total;
-        lblKembalian.setText(kembalian >= 0
-                ? "Kembalian Rp " + FMT.format(kembalian)
+        kembalian = tunai - (selected != null ? selected.kekurangan : 0);
+        lblKembalian.setText(kembalian >= 0 ? "Kembalian Rp " + FMT.format(kembalian)
                 : "Kurang Rp " + FMT.format(Math.abs(kembalian)));
-        lblKembalian.setStyle(kembalian >= 0
-                ? "-fx-text-fill: #00E5A0;"
-                : "-fx-text-fill: #FF5C7C;");
-    }
-
-    @FXML
-    private void onQuick5() {
-        tfTunai.setText("5000");
-        updateSummary();
-    }
-
-    @FXML
-    private void onQuick10() {
-        tfTunai.setText("10000");
-        updateSummary();
-    }
-
-    @FXML
-    private void onQuick20() {
-        tfTunai.setText("20000");
-        updateSummary();
-    }
-
-    @FXML
-    private void onQuick50() {
-        tfTunai.setText("50000");
-        updateSummary();
+        lblKembalian.setStyle(kembalian >= 0 ? "-fx-text-fill: #00E5A0;" : "-fx-text-fill: #FF5C7C;");
     }
 
     private boolean isUpdating = false;
@@ -559,6 +611,7 @@ public class PiutangController implements Initializable {
                 lblJumlahHutang.setText("Rp " + FMT.format(selected.kekurangan));
                 load_data_barang(selected);
                 renderList();
+                dataBarang.clear();
             }
         });
     }
@@ -579,7 +632,7 @@ public class PiutangController implements Initializable {
     private void renderList() {
         detailList.getChildren().clear();
 
-        if (data_transaksi.keranjang.isEmpty()) {
+        if (dataBarang.isEmpty()) {
             // Empty state
             VBox empty = new VBox(8);
             empty.setAlignment(Pos.CENTER);
@@ -597,23 +650,24 @@ public class PiutangController implements Initializable {
             empty.getChildren().addAll(icon, text, sub);
             detailList.getChildren().add(empty);
             btnLunas.setDisable(true);
+
+            System.out.println("Keranjang kosong, tampilkan empty state");
             return;
+        } else {
+            // Table header
+            detailList.getChildren().add(buildTableHeader());
+            // Item rows
+            int no = 1;
+            for (DataBarang barang : dataBarang) {
+                detailList.getChildren().add(setdatabarang(barang, no));
+                no++;
+            }
+            // Summary
+            updateSummary();
+            btnLunas.setDisable(false);
+            System.out.println("Menmpulkan " + dataBarang.size() + " item di detail list");
         }
 
-        // Table header
-        detailList.getChildren().add(buildTableHeader());
-
-        // Item rows
-        int no = 1;
-        for (DataBarang barang : dataBarang) {
-            detailList.getChildren().add(setdatabarang(barang, no));
-            no++;
-        }
-
-        // Summary
-        updateSummary();
-
-        btnLunas.setDisable(false);
     }
 
     // ── Table header ──────────────────────────────────
@@ -622,13 +676,11 @@ public class PiutangController implements Initializable {
         Label thNama = new Label("Nama Produk");
         Label thHarga = new Label("Harga Satuan");
         Label thQty = new Label("Qty");
-        Label thSubtotal = new Label("Subtotal");
 
         thNo.getStyleClass().add("th-label");
         thNama.getStyleClass().add("th-label");
         thHarga.getStyleClass().add("th-label");
         thQty.getStyleClass().add("th-label");
-        thSubtotal.getStyleClass().add("th-label");
 
         // ← samakan ukuran dengan item row
         thNo.setPrefWidth(40);
@@ -646,11 +698,7 @@ public class PiutangController implements Initializable {
         thQty.setMinWidth(60);
         thQty.setAlignment(Pos.CENTER);
 
-        thSubtotal.setPrefWidth(120);
-        thSubtotal.setMinWidth(120);
-        thSubtotal.setAlignment(Pos.CENTER_RIGHT);
-
-        HBox header = new HBox(12, thNo, thNama, thHarga, thQty, thSubtotal);
+        HBox header = new HBox(12, thNo, thNama, thHarga, thQty);
         header.getStyleClass().add("table-header");
         header.setAlignment(Pos.CENTER_LEFT);
         return header;
@@ -686,6 +734,47 @@ public class PiutangController implements Initializable {
         row.getStyleClass().add("item-row");
         row.setAlignment(Pos.CENTER_LEFT);
 
-        return new HBox(12, lblNo, lblHarga, lblQty);
+        return new HBox(12, lblNo, lblNama, lblHarga, lblQty);
+    }
+
+    
+    // ═════════════════════════════════════════════════════
+    // OTHER HANDLERS
+    // ═════════════════════════════════════════════════════
+
+
+    @FXML
+    private void onQuick5() {
+        tfTunai.setText("5000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onQuick10() {
+        tfTunai.setText("10000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onQuick20() {
+        tfTunai.setText("20000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onQuick50() {
+        tfTunai.setText("50000");
+        updateSummary();
+    }
+
+    @FXML
+    private void onNotif() {
+        System.out.println("Notifikasi dibuka");
+    }
+
+    @FXML
+    private void onLihatSemua() {
+        System.out.println("Lihat semua transaksi");
+
     }
 }
