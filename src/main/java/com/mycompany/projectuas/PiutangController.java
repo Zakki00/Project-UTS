@@ -25,7 +25,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -102,6 +101,8 @@ public class PiutangController implements Initializable {
     // ── FXML refs ──────────────────────────────────
     @FXML
     private TextField tfPelanggan;
+    @FXML
+    private Button btnClearSearch;
     @FXML
     private TableView<DataHutang> tableHutang;
     @FXML
@@ -182,7 +183,7 @@ public class PiutangController implements Initializable {
 
     // -------------------ambil data hutang dari database----------------
     private void load_data_hutang(String namapelanggan) {
-
+        dataHutang.clear();
         String sql = "SELECT " + "t.id_transaksi, " + "t.pelanggan AS nama_pelanggan, " + "t.total_pembayaran, "
                 + "t.uang_pembayaran, " + "t.kekurangan, " + "t.status_pembayaran, " + "t.tanggal_transaksi "
                 + "FROM tb_transaksi t " + "WHERE t.status_pembayaran = 'Belum Lunas' " + "AND t.pelanggan LIKE '%"
@@ -239,6 +240,7 @@ public class PiutangController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         setupNavHover();
         setupTable();
+        setupSearch();
         tableHutang.setItems(dataHutang);
         load_data_hutang("");
         setupLayout();
@@ -390,6 +392,23 @@ public class PiutangController implements Initializable {
         }
     }
 
+    // setup search
+
+    private void setupSearch() {
+        tfPelanggan.textProperty().addListener((obs, o, n) -> {
+            load_data_hutang(n);
+            tableHutang.setItems(dataHutang);
+        });
+    }
+
+    @FXML
+    void onClearSearch() {
+        tfPelanggan.setText("Cari Nama Pelanggan");
+        load_data_hutang("");
+        tableHutang.setItems(dataHutang);
+        tableHutang.refresh();
+    }
+
     // ── Setup tabel ────────────────────────────────
     private void setupTable() {
         colNo.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().no)));
@@ -403,6 +422,7 @@ public class PiutangController implements Initializable {
 
         tableHutang.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
+
     // ═══════════════════════════════════════════════
     // LOAD DATA KPI
     private void loadKPI() {
@@ -528,36 +548,82 @@ public class PiutangController implements Initializable {
 
     // ═══════════════════════════════════════════════
     // LOAD DATA & RENDER
+    private void clearform() {
+        lblIdTransaksi.setText("");
+        lblNamaPelanggan.setText("");
+        lblJumlahHutang.setText("Rp 0");
+        tfTunai.setText("");
+        lblKembalian.setText("Rp 0");
+    }
 
     @FXML
     private void onLunas() {
-        String sql = "UPDATE tb_transaksi SET status_pembayaran = 'Lunas', kembalian = "
-                + lblKembalian.getText().replaceAll("[^0-9]", "") + " WHERE id_transaksi = '" + lblIdTransaksi.getText()
-                + "'";
-        koneksi.eksekusiQuery(sql);
-        System.out.println(
-                "Transaksi " + lblIdTransaksi.getText() + " ditandai LUNAS dengan kembalian " + lblKembalian.getText());
+
+        // 1. Validasi input
+        if (tfTunai.getText().isEmpty() || kembalian < 0) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Pembayaran Tidak Valid");
+            alert.setHeaderText(null);
+            alert.setContentText("Pastikan jumlah tunai sudah benar dan cukup untuk melunasi hutang.");
+            alert.showAndWait();
+            return;
+        }
+
+        // 2. Konfirmasi user
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Konfirmasi Lunas");
         confirm.setHeaderText(null);
         confirm.setContentText("Tandai transaksi ini sebagai LUNAS?");
-        dataBarang.clear();
-        confirm.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
-                load_data_hutang(tfPelanggan.getText());
-                renderList();
-                updateSummary();
-                setupTable();
-                loadKPI();
-            }
-        });
 
+        confirm.showAndWait().ifPresent(response -> {
+            if (response != javafx.scene.control.ButtonType.OK) {
+                return;
+            }
+
+            // 3. Ambil data aman
+            String idTransaksi = lblIdTransaksi.getText();
+            String kembalianStr = lblKembalian.getText().replaceAll("[^0-9]", "");
+            String raw = tfTunai.getText();
+            String clean = raw.replaceAll("[^0-9]", "");
+            int tunai = Integer.parseInt(clean);
+            // 4. Update database (HANYA SEKALI)
+            String sql = "UPDATE tb_transaksi SET "
+                    + "uang_pembayaran = uang_pembayaran + " + tunai + ", "
+                    + "status_pembayaran = 'Lunas', "
+                    + "kembalian = " + kembalianStr + ", "
+                    + "kekurangan = 0 "
+                    + "WHERE id_transaksi = '" + idTransaksi + "'";
+
+            koneksi.eksekusiQuery(sql);
+
+            System.out.println("Transaksi " + idTransaksi + " ditandai LUNAS");
+
+            // 5. Reset state UI
+            dataBarang.clear();
+            renderList();
+
+            // 6. Reload data utama (INI YANG PENTING)
+            load_data_hutang(tfPelanggan.getText());
+            tableHutang.setItems(dataHutang);
+            tableHutang.refresh();
+
+            // 7. Update komponen lain
+            updateSummary();
+            loadKPI();
+
+            clearform();
+            onClearSearch();
+            tfPelanggan.setDisable(false);
+
+        });
     }
 
     @FXML
     private void onBatal() {
         dataBarang.clear();
         renderList();
+        tfPelanggan.setDisable(false);
+        clearform();
     }
 
     long kembalian;
@@ -611,6 +677,7 @@ public class PiutangController implements Initializable {
                 lblJumlahHutang.setText("Rp " + FMT.format(selected.kekurangan));
                 load_data_barang(selected);
                 renderList();
+                tfPelanggan.setDisable(true);
                 dataBarang.clear();
             }
         });
@@ -665,7 +732,7 @@ public class PiutangController implements Initializable {
             // Summary
             updateSummary();
             btnLunas.setDisable(false);
-            System.out.println("Menmpulkan " + dataBarang.size() + " item di detail list");
+            System.out.println("Menampilkan Jumlah Data Barang: " + dataBarang.size() + " item");
         }
 
     }
@@ -674,7 +741,7 @@ public class PiutangController implements Initializable {
     private HBox buildTableHeader() {
         Label thNo = new Label("No");
         Label thNama = new Label("Nama Produk");
-        Label thHarga = new Label("Harga Satuan");
+        Label thHarga = new Label("Harga");
         Label thQty = new Label("Qty");
 
         thNo.getStyleClass().add("th-label");
@@ -682,66 +749,83 @@ public class PiutangController implements Initializable {
         thHarga.getStyleClass().add("th-label");
         thQty.getStyleClass().add("th-label");
 
-        // ← samakan ukuran dengan item row
-        thNo.setPrefWidth(40);
-        thNo.setMinWidth(40);
+        // No
+        thNo.setPrefWidth(30);
+        thNo.setMinWidth(30);
+        thNo.setMaxWidth(30);
         thNo.setAlignment(Pos.CENTER);
 
-        HBox.setHgrow(thNama, Priority.ALWAYS);
-        thNama.setMaxWidth(Double.MAX_VALUE);
+        // Nama produk
+        thNama.setPrefWidth(100);
+        thNama.setMinWidth(100);
+        thNama.setMaxWidth(100);
+        thNama.setAlignment(Pos.CENTER_LEFT);
 
-        thHarga.setPrefWidth(130);
-        thHarga.setMinWidth(130);
-        thHarga.setAlignment(Pos.CENTER_RIGHT);
-
-        thQty.setPrefWidth(60);
-        thQty.setMinWidth(60);
+        // Harga
+        thHarga.setPrefWidth(90);
+        thHarga.setMinWidth(90);
+        thHarga.setMaxWidth(90);
+        thHarga.setAlignment(Pos.CENTER);
+        // Qty
+        thQty.setPrefWidth(50);
+        thQty.setMinWidth(50);
+        thQty.setMaxWidth(50);
         thQty.setAlignment(Pos.CENTER);
 
-        HBox header = new HBox(12, thNo, thNama, thHarga, thQty);
+        HBox header = new HBox(5, thNo, thNama, thHarga, thQty);
         header.getStyleClass().add("table-header");
         header.setAlignment(Pos.CENTER_LEFT);
+
         return header;
     }
 
+    // ── Set data barang row ─────────────────────────────
     private HBox setdatabarang(DataBarang barang, int no) {
-        // No urut
+        // cell data
         Label lblNo = new Label(String.valueOf(no));
+        Label lblNama = new Label(barang.nama_barang);
+        Label lblHarga = new Label("Rp " + FMT.format(barang.harga_barang));
+        Label lblQty = new Label("x" + barang.qty);
+
+        // No urut
         lblNo.getStyleClass().add("item-no");
-        lblNo.setPrefWidth(40);
-        lblNo.setMinWidth(40);
+        lblNo.setPrefWidth(30);
+        lblNo.setMinWidth(30);
+        lblNo.setMaxWidth(30);
         lblNo.setAlignment(Pos.CENTER);
 
-        // Nama + kategori
-        Label lblNama = new Label(barang.nama_barang);
-        lblNama.getStyleClass().add("item-nama");
+        // Nama produk
 
-        // Harga satuan
-        Label lblHarga = new Label("Rp " + FMT.format(barang.harga_barang));
+        lblNama.getStyleClass().add("item-nama");
+        lblNama.setPrefWidth(100);
+        lblNama.setMinWidth(100);
+        lblNama.setMaxWidth(100);
+        lblNama.setAlignment(Pos.CENTER_LEFT);
+
+        // Harga
         lblHarga.getStyleClass().add("item-harga");
-        lblHarga.setPrefWidth(130);
-        lblHarga.setMinWidth(130);
-        lblHarga.setAlignment(Pos.CENTER_RIGHT);
+        lblHarga.setPrefWidth(90);
+        lblHarga.setMinWidth(90);
+        lblHarga.setMaxWidth(90);
+        lblHarga.setAlignment(Pos.CENTER);
 
         // Qty
-        Label lblQty = new Label("x" + barang.qty);
         lblQty.getStyleClass().add("item-qty");
-        lblQty.setPrefWidth(60);
-        lblQty.setMinWidth(60);
+        lblQty.setPrefWidth(50);
+        lblQty.setMinWidth(50);
+        lblQty.setMaxWidth(50);
         lblQty.setAlignment(Pos.CENTER);
 
-        HBox row = new HBox(12, lblNo, lblHarga, lblQty);
+        HBox row = new HBox(5, lblNo, lblNama, lblHarga, lblQty);
         row.getStyleClass().add("item-row");
         row.setAlignment(Pos.CENTER_LEFT);
 
-        return new HBox(12, lblNo, lblNama, lblHarga, lblQty);
+        return row;
     }
 
-    
     // ═════════════════════════════════════════════════════
     // OTHER HANDLERS
     // ═════════════════════════════════════════════════════
-
 
     @FXML
     private void onQuick5() {

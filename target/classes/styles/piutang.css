@@ -428,6 +428,21 @@
   -fx-background-color: #0f1117;
 }
 
+/* //search-box */
+.btn-clear {
+  -fx-background-color: transparent;
+  -fx-text-fill: #8B8FA8;
+  -fx-font-size: 11px;
+  -fx-cursor: hand;
+  -fx-padding: 2 4 2 4;
+  -fx-border-width: 0;
+}
+
+.btn-clear:hover {
+  -fx-text-fill: #FF5C7C;
+}
+
+
 /* ── HEADER PELANGGAN ────────────────────────── */
 .header-piutang {
   -fx-background-color: #1a1d2e;
@@ -790,7 +805,7 @@
   -fx-background-color: transparent;
   -fx-background: #0F1117;
   -fx-border-width: 0;
-  -fx-padding: 0 16 0 16;
+  -fx-padding: 12 0 12 0;
 }
 
 .detail-scroll .viewport {
@@ -812,8 +827,9 @@
   -fx-background-color: #252840;
   -fx-border-radius: 8;
   -fx-background-radius: 8;
-  -fx-padding: 10 16 10 16;
+    -fx-padding: 12 0 12 0;
 }
+
 
 .th-label {
   -fx-text-fill: #8B8FA8;
@@ -828,7 +844,7 @@
   -fx-border-width: 1;
   -fx-border-radius: 10;
   -fx-background-radius: 10;
-  -fx-padding: 12 16 12 16;
+  -fx-padding: 12 0 12 0;
 }
 
 .item-row:hover {
@@ -839,7 +855,6 @@
 .item-no {
   -fx-text-fill: #8B8FA8;
   -fx-font-size: 11px;
-  -fx-min-width: 30;
   -fx-alignment: CENTER;
 }
 
@@ -855,37 +870,15 @@
 }
 
 .item-harga {
-  -fx-text-fill: #8B8FA8;
+  -fx-text-fill: #d6d6d6;
   -fx-font-size: 11px;
-  -fx-min-width: 100;
-  -fx-alignment: CENTER_RIGHT;
+  -fx-font-weight: bold;
 }
 
 .item-qty {
   -fx-text-fill: #FFFFFF;
   -fx-font-size: 12px;
   -fx-font-weight: bold;
-  -fx-min-width: 40;
-  -fx-alignment: CENTER;
 }
 
-.item-subtotal {
-  -fx-text-fill: #00E5A0;
-  -fx-font-size: 12px;
-  -fx-font-weight: bold;
-  -fx-min-width: 110;
-  -fx-alignment: CENTER_RIGHT;
-}
 
-.item-hapus {
-  -fx-background-color: transparent;
-  -fx-border-width: 0;
-  -fx-text-fill: #8B8FA8;
-  -fx-font-size: 14px;
-  -fx-cursor: hand;
-  -fx-padding: 0 4 0 4;
-}
-
-.item-hapus:hover {
-  -fx-text-fill: #FF5C7C;
-}

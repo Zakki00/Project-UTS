@@ -88,10 +88,3 @@ INSERT INTO tb_barang (nama_barang, harga, kategori, stok, deskripsi) VALUES
 
 SELECT * FROM  tb_transaksi JOIN tb_detail_transaksi ON tb_transaksi.id_transaksi = tb_detail_transaksi.id_transaksi
 JOIN tb_barang ON tb_detail_transaksi.id_barang = tb_barang.id_barang WHERE tb_transaksi.status_pembayaran = 'Belum Lunas';
-
-list data piutang
-nama pelanggna
-kekurangan
-total pembayaran
-status pembayaran
-tanggal transaksi
