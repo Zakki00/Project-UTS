@@ -1,6 +1,6 @@
+DROP DATABASE db_enjoy_cave;
 CREATE DATABASE IF NOT EXISTS db_enjoy_cave;
 
--- DROP DATABASE db_enjoy_cave;
 
 USE db_enjoy_cave;
 
@@ -50,9 +50,9 @@ CREATE Table tb_detail_transaksi (
     FOREIGN KEY (id_barang) REFERENCES tb_barang (id_barang)
 );
 
-INSERT INTO tb_user (username, password) VALUES
-('admin123', 'admin123'),
-('user_123', 'user123');
+INSERT INTO tb_user (username, password,nama_lengkap) VALUES
+('admin123', 'admin123', 'endri'),
+('user_123', 'user123', 'Caven');
 
 
 

@@ -7,102 +7,98 @@ import javafx.collections.ObservableList;
 
 public class LaporanModel {
 
+    
     public static final ObservableList<LaporanTransaksiItem> dataLaporanTransaksi = FXCollections.observableArrayList();
-    private ObservableList<LaporanBarangItem> dataLaporanBarang = FXCollections.observableArrayList();
-
+    // Static list masing-masing
+    public static final ObservableList<HarianItem> dataHarian = FXCollections.observableArrayList();
+    public static final ObservableList<BulananItem> dataBulanan = FXCollections.observableArrayList();
+    public static final ObservableList<TransaksiItem> dataTransaksi = FXCollections.observableArrayList();
+    public static final ObservableList<StokItem> dataStok = FXCollections.observableArrayList();
+ 
     public static class LaporanTransaksiItem {
 
-        public int no;
-        public int idTransaksi;
+    public int no;
+    public int idTransaksi;
 
-        public String username;
-        public String namaLengkap;
-        public String pelanggan;
+    public String username;
+    public String namaLengkap;
+    public String pelanggan;
 
-        public long totalPembayaran;
-        public long uangPembayaran;
-        public long kembalian;
-        public long kekurangan;
+    public long totalPembayaran;
+    public long uangPembayaran;
+    public long kembalian;
+    public long kekurangan;
 
-        public String statusPembayaran;
-        public LocalDate tanggalTransaksi;
+    public String statusPembayaran;
+    public LocalDate tanggalTransaksi;
 
-        public LaporanTransaksiItem(
-                int no,
-                int idTransaksi,
-                String username,
-                String namaLengkap,
-                String pelanggan,
-                long totalPembayaran,
-                long uangPembayaran,
-                long kembalian,
-                long kekurangan,
-                String statusPembayaran,
-                LocalDate tanggalTransaksi) {
-            this.no = no;
-            this.idTransaksi = idTransaksi;
-            this.username = username;
-            this.namaLengkap = namaLengkap;
-            this.pelanggan = pelanggan;
-            this.totalPembayaran = totalPembayaran;
-            this.uangPembayaran = uangPembayaran;
-            this.kembalian = kembalian;
-            this.kekurangan = kekurangan;
-            this.statusPembayaran = statusPembayaran;
-            this.tanggalTransaksi = tanggalTransaksi;
-        }
+    public LaporanTransaksiItem(
+            int no,
+            int idTransaksi,
+            String username,
+            String namaLengkap,
+            String pelanggan,
+            long totalPembayaran,
+            long uangPembayaran,
+            long kembalian,
+            long kekurangan,
+            String statusPembayaran,
+            LocalDate tanggalTransaksi
+    ) {
+        this.no = no;
+        this.idTransaksi = idTransaksi;
+        this.username = username;
+        this.namaLengkap = namaLengkap;
+        this.pelanggan = pelanggan;
+        this.totalPembayaran = totalPembayaran;
+        this.uangPembayaran = uangPembayaran;
+        this.kembalian = kembalian;
+        this.kekurangan = kekurangan;
+        this.statusPembayaran = statusPembayaran;
+        this.tanggalTransaksi = tanggalTransaksi;
     }
+}
 
-    public static class LaporanBarangItem {
+// ═══════════════════════════════════════════════
+// MODEL CHART 1 & 2 — Harian (Area + Bar)
+// ═══════════════════════════════════════════════
+// Chart 1 & 2 — pakai ini sekaligus
+public static class HarianItem {
+    public String hari;
+    public long totalPenjualan; // → Area chart
+    public int jumlahTransaksi; // → Bar chart
+}
 
-        public int no;
-        public int idBarang;
+// Chart 3
+public static class BulananItem {
+    public String bulan;
+    public int noBulan;
+    public long totalOmzet;
+}
 
-        public String namaBarang;
-        public String kategori;
+// Table 4
+public static class TransaksiItem {
 
-        public int stok;
-        public long harga;
+    public String id, items, kasir, waktu;
+    public long total;
 
-        public LaporanBarangItem(
-                int no,
-                int idBarang,
-                String namaBarang,
-                String kategori,
-                int stok,
-                long harga) {
-            this.no = no;
-            this.idBarang = idBarang;
-            this.namaBarang = namaBarang;
-            this.kategori = kategori;
-            this.stok = stok;
-            this.harga = harga;
-        }
+    public TransaksiItem(String id, String items, String kasir, String waktu, long total) {
+        this.id = id;
+        this.items = items;
+        this.kasir = kasir;
+        this.waktu = waktu;
+        this.total = total;
     }
-    public static class LaporanPiutangItem {
+}
 
-        public int no;
-        public String idTransaksi;
-        public String namaPelanggan;
-        public Long total_pembayaran;
-        public Long uang_pembayaran;
-        public long kekurangan;
-        public String status_pembayaran;
-        public String tanggal_transaksi;
+// Progress bar 5
+public static class StokItem {
+    public String nama, status;
+    public int stok, stokMax;
 
-        public LaporanPiutangItem(int no, String idTransaksi, String namaPelanggan, Long total_pembayaran, Long uang_pembayaran,
-                long kekurangan, String status_pembayaran, String tanggal_transaksi) {
-            this.no = no;
-            this.idTransaksi = idTransaksi;
-            this.namaPelanggan = namaPelanggan;
-            this.total_pembayaran = total_pembayaran;
-            this.uang_pembayaran = uang_pembayaran;
-            this.kekurangan = kekurangan;
-            this.status_pembayaran = status_pembayaran;
-            this.tanggal_transaksi = tanggal_transaksi;
-
-        }
-
+    public double persen() {
+        return stokMax > 0 ? (double) stok / stokMax : 0;
     }
+}
 
 }
