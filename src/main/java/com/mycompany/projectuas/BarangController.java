@@ -13,11 +13,18 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 public class BarangController implements Initializable {
 
@@ -68,20 +75,55 @@ public class BarangController implements Initializable {
     private FilteredList<BarangModel> filteredData;
     private int idCounter = 4;
     private boolean isSidebarExpanded = true;
+    
+
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cmbKategori.setItems(FXCollections.observableArrayList(
-            "Makanan", "Minuman", "Sembako", "Elektronik", "Pakaian"
+            "Makanan", "Minuman"
         ));
 
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colGambar.setCellValueFactory(new PropertyValueFactory<>("gambar"));
+
+colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
+
+    private final ImageView imageView = new ImageView();
+
+    {
+        imageView.setFitWidth(50);
+        imageView.setFitHeight(50);
+        imageView.setPreserveRatio(true);
+    }
+
+    @Override
+    protected void updateItem(String item, boolean empty) {
+        super.updateItem(item, empty);
+
+        if (empty || item == null) {
+            setGraphic(null);
+        } else {
+            try {
+                Image image = new Image(
+                    getClass().getResourceAsStream("/image-barang/" + item)
+                );
+
+                imageView.setImage(image);
+                setGraphic(imageView);
+
+            } catch (Exception e) {
+                setGraphic(null);
+            }
+        }
+    }
+});
         colNama.setCellValueFactory(new PropertyValueFactory<>("nama"));
         colKategori.setCellValueFactory(new PropertyValueFactory<>("kategori"));
         colHarga.setCellValueFactory(new PropertyValueFactory<>("harga"));
         colStok.setCellValueFactory(new PropertyValueFactory<>("stok"));
         colDeskripsi.setCellValueFactory(new PropertyValueFactory<>("deskripsi"));
+        tabelBarang.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         colStatus.setCellValueFactory(cellData -> {
             int stokVal = cellData.getValue().getStok();
@@ -91,7 +133,7 @@ public class BarangController implements Initializable {
 
         masterData.add(new BarangModel(1, "Indomie Goreng", "Makanan", 3500, 50, "Indomie Rasa Mi Goreng Spesial", "📦"));
         masterData.add(new BarangModel(2, "Coca Cola 390ml", "Minuman", 5000, 12, "Minuman Bersoda Segar", "📦"));
-        masterData.add(new BarangModel(3, "Beras Ramos 5kg", "Sembako", 68000, 0, "Beras Putih Premium", "📦"));
+       
 
         filteredData = new FilteredList<>(masterData, p -> true);
         tabelBarang.setItems(filteredData);
@@ -188,17 +230,37 @@ public class BarangController implements Initializable {
         });
     }
 
-    @FXML
-    void onPilihFoto(ActionEvent event) {
-        FileChooser fc = new FileChooser();
-        fc.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Gambar (*.png, *.jpg)", "*.png", "*.jpg", "*.jpeg")
-        );
-        File file = fc.showOpenDialog(txtNama.getScene().getWindow());
-        if (file != null) {
+   @FXML
+void onPilihFoto(ActionEvent event) {
+    FileChooser fc = new FileChooser();
+    fc.getExtensionFilters().add(
+        new FileChooser.ExtensionFilter(
+            "Gambar (*.png, *.jpg)",
+            "*.png", "*.jpg", "*.jpeg","*.webp","*.jfif"
+        )
+    );
+
+    File file = fc.showOpenDialog(txtNama.getScene().getWindow());
+
+    if (file != null) {
+        try {
+            Path tujuan = Path.of(
+                "src/main/resources/image-barang/" + file.getName()
+            );
+
+            Files.copy(
+                file.toPath(),
+                tujuan,
+                StandardCopyOption.REPLACE_EXISTING
+            );
+
             lblFilePath.setText(file.getName());
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+}
 
     // ═══════════════════════════════════════════
     // SIDEBAR TOGGLE
