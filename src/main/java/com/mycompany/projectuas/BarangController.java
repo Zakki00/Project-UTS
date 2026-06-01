@@ -3,6 +3,10 @@ package com.mycompany.projectuas;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -14,21 +18,18 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 
 public class BarangController implements Initializable {
 
-    // --- Elemen FXML Form ---
     @FXML private TextField txtNama;
     @FXML private ComboBox<String> cmbKategori;
     @FXML private TextField txtHarga;
@@ -37,7 +38,6 @@ public class BarangController implements Initializable {
     @FXML private Label lblFilePath;
     @FXML private TextField txtCari;
 
-    // --- Elemen FXML Tabel ---
     @FXML private TableView<BarangModel> tabelBarang;
     @FXML private TableColumn<BarangModel, Integer> colId;
     @FXML private TableColumn<BarangModel, String> colGambar;
@@ -48,7 +48,6 @@ public class BarangController implements Initializable {
     @FXML private TableColumn<BarangModel, String> colDeskripsi;
     @FXML private TableColumn<BarangModel, String> colStatus;
 
-    // --- Elemen FXML Sidebar ---
     @FXML private VBox sidebar;
     @FXML private VBox logoBrand;
     @FXML private Button toggleBtn;
@@ -61,7 +60,6 @@ public class BarangController implements Initializable {
     @FXML private Label navLblPengaturan1;
     @FXML private VBox userInfo;
 
-    // --- Nav HBox (untuk setActiveNav) ---
     @FXML private HBox navDashboard;
     @FXML private HBox navProduk;
     @FXML private HBox navKasir;
@@ -70,54 +68,15 @@ public class BarangController implements Initializable {
     @FXML private HBox navPiutang;
     @FXML private HBox navPengaturan;
 
-    // --- Data List ---
     private ObservableList<BarangModel> masterData = FXCollections.observableArrayList();
     private FilteredList<BarangModel> filteredData;
-    private int idCounter = 4;
     private boolean isSidebarExpanded = true;
-    
-
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        cmbKategori.setItems(FXCollections.observableArrayList(
-            "Makanan", "Minuman"
-        ));
+        cmbKategori.setItems(FXCollections.observableArrayList("Makanan", "Minuman"));
 
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colGambar.setCellValueFactory(new PropertyValueFactory<>("gambar"));
-
-colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
-
-    private final ImageView imageView = new ImageView();
-
-    {
-        imageView.setFitWidth(50);
-        imageView.setFitHeight(50);
-        imageView.setPreserveRatio(true);
-    }
-
-    @Override
-    protected void updateItem(String item, boolean empty) {
-        super.updateItem(item, empty);
-
-        if (empty || item == null) {
-            setGraphic(null);
-        } else {
-            try {
-                Image image = new Image(
-                    getClass().getResourceAsStream("/image-barang/" + item)
-                );
-
-                imageView.setImage(image);
-                setGraphic(imageView);
-
-            } catch (Exception e) {
-                setGraphic(null);
-            }
-        }
-    }
-});
         colNama.setCellValueFactory(new PropertyValueFactory<>("nama"));
         colKategori.setCellValueFactory(new PropertyValueFactory<>("kategori"));
         colHarga.setCellValueFactory(new PropertyValueFactory<>("harga"));
@@ -125,15 +84,46 @@ colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
         colDeskripsi.setCellValueFactory(new PropertyValueFactory<>("deskripsi"));
         tabelBarang.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        colStatus.setCellValueFactory(cellData -> {
-            int stokVal = cellData.getValue().getStok();
-            String statusTeks = (stokVal > 0) ? "Tersedia" : "Habis";
-            return new SimpleStringProperty(statusTeks);
+        colGambar.setCellValueFactory(new PropertyValueFactory<>("gambar"));
+        colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
+            private final ImageView imageView = new ImageView();
+            {
+                imageView.setFitWidth(50);
+                imageView.setFitHeight(50);
+                imageView.setPreserveRatio(true);
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isBlank()) {
+                    setGraphic(null);
+                    setText(null);
+                } else {
+                    try {
+                        var stream = getClass().getResourceAsStream("/image-barang/" + item);
+                        if (stream != null) {
+                            imageView.setImage(new Image(stream));
+                            setGraphic(imageView);
+                            setText(null);
+                        } else {
+                            setGraphic(null);
+                            setText(item);
+                        }
+                    } catch (Exception e) {
+                        setGraphic(null);
+                        setText(null);
+                    }
+                }
+            }
         });
 
-        masterData.add(new BarangModel(1, "Indomie Goreng", "Makanan", 3500, 50, "Indomie Rasa Mi Goreng Spesial", "📦"));
-        masterData.add(new BarangModel(2, "Coca Cola 390ml", "Minuman", 5000, 12, "Minuman Bersoda Segar", "📦"));
-       
+        colStatus.setCellValueFactory(cellData -> {
+            int stokVal = cellData.getValue().getStok();
+            return new SimpleStringProperty(stokVal > 0 ? "Tersedia" : "Habis");
+        });
+
+        loadDataFromDB();
 
         filteredData = new FilteredList<>(masterData, p -> true);
         tabelBarang.setItems(filteredData);
@@ -145,9 +135,36 @@ colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
                 txtHarga.setText(String.valueOf(newSelection.getHarga()));
                 txtStok.setText(String.valueOf(newSelection.getStok()));
                 txtDeskripsi.setText(newSelection.getDeskripsi());
-                lblFilePath.setText(newSelection.getGambar());
+                lblFilePath.setText(newSelection.getGambar() != null ? newSelection.getGambar() : "Tidak ada file dipilih");
             }
         });
+    }
+
+    // ═══════════════════════════════════════════
+    // LOAD DATA DARI DATABASE
+    // ═══════════════════════════════════════════
+
+    private void loadDataFromDB() {
+        masterData.clear();
+        String query = "SELECT id_barang, nama_barang, kategori, harga, stok, deskripsi, image_url FROM tb_barang";
+        try (Connection conn = koneksi.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                masterData.add(new BarangModel(
+                    rs.getInt("id_barang"),
+                    rs.getString("nama_barang"),
+                    rs.getString("kategori"),
+                    rs.getInt("harga"),
+                    rs.getInt("stok"),
+                    rs.getString("deskripsi"),
+                    rs.getString("image_url")
+                ));
+            }
+        } catch (SQLException e) {
+            showAlert("Error DB", "Gagal memuat data: " + e.getMessage());
+        }
     }
 
     // ═══════════════════════════════════════════
@@ -167,12 +184,28 @@ colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
             int harga        = Integer.parseInt(txtHarga.getText());
             int stok         = Integer.parseInt(txtStok.getText());
             String deskripsi = txtDeskripsi.getText();
-            String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? "📦" : lblFilePath.getText();
+            String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? null : lblFilePath.getText();
 
-            masterData.add(new BarangModel(idCounter++, nama, kategori, harga, stok, deskripsi, gambar));
+            String query = "INSERT INTO tb_barang (nama_barang, kategori, harga, stok, deskripsi, image_url) VALUES (?, ?, ?, ?, ?, ?)";
+            try (Connection conn = koneksi.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(query)) {
+
+                ps.setString(1, nama);
+                ps.setString(2, kategori);
+                ps.setInt(3, harga);
+                ps.setInt(4, stok);
+                ps.setString(5, deskripsi);
+                ps.setString(6, gambar);
+                ps.executeUpdate();
+            }
+
+            loadDataFromDB();
             clearForm(null);
+
         } catch (NumberFormatException e) {
             showAlert("Kesalahan Input", "Harga dan Stok harus diisi menggunakan angka bulat!");
+        } catch (SQLException e) {
+            showAlert("Error DB", "Gagal menambah data: " + e.getMessage());
         }
     }
 
@@ -184,17 +217,34 @@ colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
             return;
         }
         try {
-            dipilih.setNama(txtNama.getText());
-            dipilih.setKategori(cmbKategori.getValue());
-            dipilih.setHarga(Integer.parseInt(txtHarga.getText()));
-            dipilih.setStok(Integer.parseInt(txtStok.getText()));
-            dipilih.setDeskripsi(txtDeskripsi.getText());
-            dipilih.setGambar(lblFilePath.getText());
+            String nama      = txtNama.getText();
+            String kategori  = cmbKategori.getValue();
+            int harga        = Integer.parseInt(txtHarga.getText());
+            int stok         = Integer.parseInt(txtStok.getText());
+            String deskripsi = txtDeskripsi.getText();
+            String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? dipilih.getGambar() : lblFilePath.getText();
 
-            tabelBarang.refresh();
+            String query = "UPDATE tb_barang SET nama_barang=?, kategori=?, harga=?, stok=?, deskripsi=?, image_url=? WHERE id_barang=?";
+            try (Connection conn = koneksi.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(query)) {
+
+                ps.setString(1, nama);
+                ps.setString(2, kategori);
+                ps.setInt(3, harga);
+                ps.setInt(4, stok);
+                ps.setString(5, deskripsi);
+                ps.setString(6, gambar);
+                ps.setInt(7, dipilih.getId());
+                ps.executeUpdate();
+            }
+
+            loadDataFromDB();
             clearForm(null);
+
         } catch (NumberFormatException e) {
             showAlert("Kesalahan Input", "Harga dan Stok harus diisi menggunakan angka bulat!");
+        } catch (SQLException e) {
+            showAlert("Error DB", "Gagal mengubah data: " + e.getMessage());
         }
     }
 
@@ -205,8 +255,21 @@ colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
             showAlert("Peringatan", "Silakan pilih data di tabel terlebih dahulu yang ingin dihapus!");
             return;
         }
-        masterData.remove(dipilih);
-        clearForm(null);
+        try {
+            String query = "DELETE FROM tb_barang WHERE id_barang=?";
+            try (Connection conn = koneksi.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(query)) {
+
+                ps.setInt(1, dipilih.getId());
+                ps.executeUpdate();
+            }
+
+            loadDataFromDB();
+            clearForm(null);
+
+        } catch (SQLException e) {
+            showAlert("Error DB", "Gagal menghapus data: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -230,37 +293,28 @@ colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
         });
     }
 
-   @FXML
-void onPilihFoto(ActionEvent event) {
-    FileChooser fc = new FileChooser();
-    fc.getExtensionFilters().add(
-        new FileChooser.ExtensionFilter(
-            "Gambar (*.png, *.jpg)",
-            "*.png", "*.jpg", "*.jpeg","*.webp","*.jfif"
-        )
-    );
+    @FXML
+    void onPilihFoto(ActionEvent event) {
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter(
+                "Gambar (*.png, *.jpg, *.jpeg, *.webp, *.jfif)",
+                "*.png", "*.jpg", "*.jpeg", "*.webp", "*.jfif"
+            )
+        );
 
-    File file = fc.showOpenDialog(txtNama.getScene().getWindow());
+        File file = fc.showOpenDialog(txtNama.getScene().getWindow());
 
-    if (file != null) {
-        try {
-            Path tujuan = Path.of(
-                "src/main/resources/image-barang/" + file.getName()
-            );
-
-            Files.copy(
-                file.toPath(),
-                tujuan,
-                StandardCopyOption.REPLACE_EXISTING
-            );
-
-            lblFilePath.setText(file.getName());
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (file != null) {
+            try {
+                Path tujuan = Path.of("src/main/resources/image-barang/" + file.getName());
+                Files.copy(file.toPath(), tujuan, StandardCopyOption.REPLACE_EXISTING);
+                lblFilePath.setText(file.getName());
+            } catch (IOException e) {
+                showAlert("Error", "Gagal menyalin file gambar: " + e.getMessage());
+            }
         }
     }
-}
 
     // ═══════════════════════════════════════════
     // SIDEBAR TOGGLE
@@ -296,7 +350,7 @@ void onPilihFoto(ActionEvent event) {
     }
 
     // ═══════════════════════════════════════════
-    // NAVIGASI SIDEBAR — ikut pola PiutangController
+    // NAVIGASI SIDEBAR
     // ═══════════════════════════════════════════
 
     @FXML
@@ -326,7 +380,6 @@ void onPilihFoto(ActionEvent event) {
     @FXML
     void onNavPelanggan() {
         setActiveNav(navPelanggan);
-        // tambahkan nav.navigateToPelanggan() jika sudah ada di class navigation
     }
 
     @FXML
@@ -350,7 +403,6 @@ void onPilihFoto(ActionEvent event) {
     @FXML
     void onNavPengaturan() {
         setActiveNav(navPengaturan);
-        // tambahkan nav.navigateToPengaturan() jika sudah ada di class navigation
     }
 
     private void setActiveNav(HBox selected) {

@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/javafx/FXMLController.java to edit this template
- */
 package com.mycompany.projectuas;
 
 import java.net.URL;
@@ -37,278 +33,66 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-/**
- * FXML Controller class
- *
- * @author zakki mubarroq
- */
 public class TransaksiController implements Initializable {
 
     koneksi koneksi = new koneksi();
 
-    // ── FXML refs ────────────────────────────────────────
-    @FXML
-    private FlowPane flowProduk;
-    @FXML
-    private TextField tfCari;
-    @FXML
-    private ComboBox<String> cbKategori;
-    @FXML
-    private Label lblJumlahProduk;
-    @FXML
-    private Button btnClearSearch;
+    @FXML private FlowPane flowProduk;
+    @FXML private TextField tfCari;
+    @FXML private ComboBox<String> cbKategori;
+    @FXML private Label lblJumlahProduk;
+    @FXML private Button btnClearSearch;
 
-    @FXML
-    private VBox sidebar;
-    @FXML
-    private Button toggleBtn;
-    @FXML
-    private HBox logoRow;
-    @FXML
-    private VBox logoBrand;
-    @FXML
-    private VBox userInfo;
-    @FXML
-    private HBox userRow;
-    @FXML
-    private VBox navMenu;
-    @FXML
-    private HBox navDashboard;
-    @FXML
-    private HBox navProduk;
-    @FXML
-    private HBox navKasir;
-    @FXML
-    private HBox navPelanggan;
-    @FXML
-    private HBox navLaporan;
-    @FXML
-    private HBox navPiutang;
-    @FXML
-    private HBox navPengaturan;
+    @FXML private VBox sidebar;
+    @FXML private Button toggleBtn;
+    @FXML private HBox logoRow;
+    @FXML private VBox logoBrand;
+    @FXML private VBox userInfo;
+    @FXML private HBox userRow;
+    @FXML private VBox navMenu;
+    @FXML private HBox navDashboard;
+    @FXML private HBox navProduk;
+    @FXML private HBox navKasir;
+    @FXML private HBox navPelanggan;
+    @FXML private HBox navLaporan;
+    @FXML private HBox navPiutang;
+    @FXML private HBox navPengaturan;
 
-    @FXML
-    private Label navLblDashboard;
-    @FXML
-    private Label navLblProduk;
-    @FXML
-    private Label navLblKasir;
-    @FXML
-    private Label navLblPelanggan;
-    @FXML
-    private Label navLblLaporan;
-    @FXML
-    private Label navLblPiutang;
-    @FXML
-    private Label navLblPengaturan;
+    @FXML private Label navLblDashboard;
+    @FXML private Label navLblProduk;
+    @FXML private Label navLblKasir;
+    @FXML private Label navLblPelanggan;
+    @FXML private Label navLblLaporan;
+    @FXML private Label navLblPiutang;
+    @FXML private Label navLblPengaturan;
 
-    @FXML
-    private VBox vboxKeranjang;
-    @FXML
-    private VBox emptyCart;
-    @FXML
-    private Label lblJumlahItem;
-    @FXML
-    private Label lblNamaKasir;
-    @FXML
-    private Label lblShift;
+    @FXML private VBox vboxKeranjang;
+    @FXML private VBox emptyCart;
+    @FXML private Label lblJumlahItem;
+    @FXML private Label lblNamaKasir;
+    @FXML private Label lblShift;
 
-    @FXML
-    private Label lblSubtotal;
-    @FXML
-    private Label lblDiskon;
+    @FXML private Label lblSubtotal;
+    @FXML private Label lblDiskon;
+    @FXML private Label lblTotal;
+    @FXML private TextField tfDiskon;
+    @FXML private TextField tfTunai;
+    @FXML private Label lblKembalian;
+    @FXML private VBox tunaiBox;
+    @FXML private Label lblNoTrx;
 
-    @FXML
-    private Label lblTotal;
-    @FXML
-    private TextField tfDiskon;
-    @FXML
-    private TextField tfTunai;
-    @FXML
-    private Label lblKembalian;
-    @FXML
-    private VBox tunaiBox;
-    @FXML
-    private Label lblNoTrx;
-
-    @FXML
-    private Button btnBayar;
-    @FXML
-    private Button btnQuick5;
-    @FXML
-    private Button btnQuick10;
-    @FXML
-    private Button btnQuick20;
-    @FXML
-    private Button btnQuick50;
+    @FXML private Button btnBayar;
+    @FXML private Button btnQuick5;
+    @FXML private Button btnQuick10;
+    @FXML private Button btnQuick20;
+    @FXML private Button btnQuick50;
 
     private boolean sidebarCollapsed = false;
     private static final double SIDEBAR_FULL = 220;
     private static final double SIDEBAR_MINI = 60;
-
-    @FXML
-    private void onToggleSidebar() {
-        sidebarCollapsed = !sidebarCollapsed;
-
-        double targetWidth = sidebarCollapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
-
-        // Animasi lebar sidebar
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
-                        new KeyValue(sidebar.minWidthProperty(), sidebar.getMinWidth())),
-                new KeyFrame(Duration.millis(350), new KeyValue(sidebar.prefWidthProperty(), targetWidth),
-                        new KeyValue(sidebar.minWidthProperty(), targetWidth)));
-
-        // Sembunyikan / tampilkan teks dengan fade
-        if (sidebarCollapsed) {
-            // Langsung sembunyikan teks saat mulai collapse
-            hideSidebarText();
-            toggleBtn.setText("▶");
-            // Ubah padding logo row ke center
-            logoRow.setAlignment(javafx.geometry.Pos.CENTER);
-            logoRow.setPadding(new Insets(18, 0, 18, 0));
-            userRow.setAlignment(javafx.geometry.Pos.CENTER);
-            userRow.setPadding(new Insets(12, 0, 12, 0));
-        } else {
-            // Tampilkan teks setelah animasi selesai
-            timeline.setOnFinished(e -> {
-                showSidebarText();
-                logoRow.setAlignment(Pos.CENTER_LEFT);
-                logoRow.setPadding(new Insets(18, 16, 18, 16));
-                userRow.setAlignment(Pos.CENTER_LEFT);
-                userRow.setPadding(new Insets(12, 16, 12, 16));
-            });
-            toggleBtn.setText("◀");
-        }
-
-        // Atur padding nav items saat collapse
-        updateNavPadding(sidebarCollapsed);
-
-        timeline.play();
-    }
-
-    @FXML
-    private void onNotif() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Notifikasi");
-        alert.setHeaderText(null);
-        alert.setContentText("Tidak ada pemberitahuan baru.");
-        alert.showAndWait();
-    }
-
-    // ═════════════════════════════════════════════════════
-    // NAV CLICK HANDLERS
-    // ═════════════════════════════════════════════════════
-    @FXML
-    private void onNavDashboard() {
-        setActiveNav(navDashboard);
-        navigation nav = new navigation();
-        nav.navigateToDashboard();
-        Stage stage = (Stage) navDashboard.getScene().getWindow();
-        stage.close();
-        data_transaksi.keranjang.clear();
-
-    }
-
-    @FXML
-    private void onNavProduk() {
-        setActiveNav(navProduk);
-         navigation nav = new navigation();
-        nav.navigateToProduk();
-        Stage stage = (Stage) navProduk.getScene().getWindow();
-        stage.close();
-    
-    }
-
-    @FXML
-    private void onNavKasir() {
-        setActiveNav(navKasir);
-
-    }
-
-    @FXML
-    private void onNavPelanggan() {
-        setActiveNav(navPelanggan);
-    }
-
-    @FXML
-    private void onNavLaporan() {
-        setActiveNav(navLaporan);
-        navigation nav = new navigation();
-        nav.navigateToLaporan();
-        Stage stage = (Stage) navLaporan.getScene().getWindow();
-        stage.close();
-    }
-
-    @FXML
-    private void onNavPiutang() {
-        setActiveNav(navPiutang);
-        navigation nav = new navigation();
-        nav.navigateToPiutang();
-        Stage stage = (Stage) navPiutang.getScene().getWindow();
-        stage.close();
-    }
-
-    @FXML
-    private void onNavPengaturan() {
-        setActiveNav(navPengaturan);
-
-    }
-
-    private void hideSidebarText() {
-        logoBrand.setVisible(false);
-        logoBrand.setManaged(false);
-        userInfo.setVisible(false);
-        userInfo.setManaged(false);
-        setNavLabelsVisible(false);
-    }
-
-    private void showSidebarText() {
-        logoBrand.setVisible(true);
-        logoBrand.setManaged(true);
-        userInfo.setVisible(true);
-        userInfo.setManaged(true);
-        setNavLabelsVisible(true);
-    }
-
-    private void setNavLabelsVisible(boolean visible) {
-        List<Label> labels = List.of(navLblDashboard, navLblProduk, navLblKasir, navLblPelanggan, navLblLaporan,
-                navLblPiutang, navLblPengaturan);
-        for (Label lbl : labels) {
-            lbl.setVisible(visible);
-            lbl.setManaged(visible);
-        }
-    }
-
-    private void updateNavPadding(boolean collapsed) {
-        Insets collapsedPad = new Insets(10, 0, 10, 0);
-        Insets normalPad = new Insets(10, 14, 10, 0);
-        Insets pad = collapsed ? collapsedPad : normalPad;
-
-        List<HBox> items = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
-                navPengaturan);
-        for (HBox item : items) {
-            item.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
-            item.setPadding(pad);
-        }
-    }
-
-    private void setActiveNav(HBox selected) {
-        List<HBox> all = List.of(navDashboard, navProduk, navKasir, navPelanggan, navLaporan, navPiutang,
-                navPengaturan);
-        for (HBox item : all) {
-            item.getStyleClass().removeAll("nav-active");
-        }
-        if (selected != null) {
-            selected.getStyleClass().add("nav-active");
-        }
-    }
-
-    // ── Variables ──────────────────────────────────────────────
     private final List<Produk> semuaProduk = new ArrayList<>();
     private String metodeBayar = "TUNAI";
     private int noTrx = 1;
-
     private static final NumberFormat FMT = NumberFormat.getInstance(new Locale("id", "ID"));
 
     // ── Model ─────────────────────────────────────────────
@@ -328,7 +112,6 @@ public class TransaksiController implements Initializable {
     }
 
     static class CartItem {
-
         Produk produk;
         int qty;
 
@@ -359,21 +142,49 @@ public class TransaksiController implements Initializable {
         setupForm();
     }
 
-    // ──data ────────────────────────────────────────
+    // ── Load produk dari DB ────────────────────────────────────────
     private void loadproduk() {
-        String sql = "SELECT * FROM tb_barang";
+        semuaProduk.clear();
+        String sql = "SELECT id_barang, nama_barang, harga, kategori, stok, deskripsi, image_url FROM tb_barang";
         List<Object[]> data = koneksi.ambilData(sql);
         for (Object[] row : data) {
-            int id = (int) row[0];
-            String nama = (String) row[1];
-            int harga = (int) row[2];
+            int id          = ((Number) row[0]).intValue();
+            String nama     = (String) row[1];
+            int harga       = ((Number) row[2]).intValue();
             String kategori = (String) row[3];
-            int stok = (int) row[4];
-            String description = (String) row[5];
-            String imageUrl = (String) row[6];
+            int stok        = ((Number) row[4]).intValue();
+            String desc     = row[5] != null ? (String) row[5] : "";
+            String imageUrl = row[6] != null ? (String) row[6] : "";
 
-            semuaProduk.add(new Produk(id, nama, harga, kategori, stok, description, imageUrl));
+            semuaProduk.add(new Produk(id, nama, harga, kategori, stok, desc, imageUrl));
         }
+    }
+
+    // ── Helper load gambar — logika not_found jika belum diupdate ──
+    private Image loadGambar(String imageUrl) {
+        // Coba load gambar dari folder image-barang jika imageUrl tidak kosong
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            try {
+                var stream = getClass().getResourceAsStream("/image-barang/" + imageUrl);
+                if (stream != null) {
+                    return new Image(stream);
+                }
+            } catch (Exception e) {
+                System.out.println("Gagal load gambar: " + imageUrl);
+            }
+        }
+
+        // Fallback ke not_found.png jika imageUrl kosong atau file tidak ditemukan
+        try {
+            var url = getClass().getResource("/image/not_found.png");
+            if (url != null) {
+                return new Image(url.toExternalForm());
+            }
+        } catch (Exception e) {
+            System.out.println("Gambar not_found.png juga tidak ditemukan");
+        }
+
+        return null;
     }
 
     private void setupKategori() {
@@ -389,7 +200,6 @@ public class TransaksiController implements Initializable {
         tfCari.textProperty().addListener((obs, o, n) -> filterProduk());
     }
 
-    // setupa form
     private void setupForm() {
         btnBayar.setDisable(true);
         tfTunai.setDisable(true);
@@ -418,22 +228,18 @@ public class TransaksiController implements Initializable {
         ImageView img = new ImageView();
         img.setFitWidth(120);
         img.setFitHeight(90);
-        img.setPreserveRatio(true); // ← tetap true, jaga rasio
+        img.setPreserveRatio(true);
         img.setSmooth(true);
 
-        // Crop tengah — potong bagian yang keluar
         Rectangle clip = new Rectangle(120, 90);
-        clip.setArcWidth(10); // rounded clip juga
+        clip.setArcWidth(10);
         clip.setArcHeight(10);
         img.setClip(clip);
 
-        try {
-            var url = getClass().getResource("/image/not_found.png");
-            if (url != null) {
-                img.setImage(new Image(url.toExternalForm()));
-            }
-        } catch (Exception e) {
-            System.out.println("Gambar tidak ditemukan");
+        // ── Load gambar: pakai imageUrl dari DB, fallback not_found ──
+        Image gambar = loadGambar(p.imageUrl);
+        if (gambar != null) {
+            img.setImage(gambar);
         }
 
         StackPane imgWrapper = new StackPane(img);
@@ -469,15 +275,13 @@ public class TransaksiController implements Initializable {
         btnTambah.setMaxWidth(Double.MAX_VALUE);
         btnTambah.setOnAction(e -> tambahKeKeranjang(p));
 
-        // ── Rakit card — imgWrapper & desc sudah masuk ─
         VBox card = new VBox(6, imgWrapper, nama, desc, harga, stok, btnTambah);
         card.setAlignment(Pos.CENTER);
         card.setPadding(new Insets(12));
         card.setPrefWidth(155);
-        card.setPrefHeight(240); // lebih tinggi karena ada gambar + deskripsi
+        card.setPrefHeight(240);
         card.getStyleClass().add(habis ? "produk-card produk-card-habis" : "produk-card");
 
-        // ── Klik card = tambah ke keranjang ────────────
         if (!habis) {
             card.setOnMouseClicked(e -> tambahKeKeranjang(p));
         }
@@ -492,33 +296,29 @@ public class TransaksiController implements Initializable {
         String query = tfCari.getText().toLowerCase().trim();
         String kat = cbKategori.getValue();
 
-        // ── Bangun SQL dinamis ────────────────────────
-        StringBuilder sql = new StringBuilder("SELECT * FROM tb_barang WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT id_barang, nama_barang, harga, kategori, stok, deskripsi, image_url FROM tb_barang WHERE 1=1");
 
-        // tambah filter kategori hanya jika bukan "Semua Kategori"
         if (kat != null && !kat.equals("Semua Kategori")) {
             sql.append(" AND kategori = '").append(kat).append("'");
         }
 
-        // tambah filter nama hanya jika ada ketikan
         if (!query.isEmpty()) {
             sql.append(" AND nama_barang LIKE '%").append(query).append("%'");
         }
 
-        // ── Ambil data ────────────────────────────────
         List<Object[]> hasil = koneksi.ambilData(sql.toString());
         List<Produk> list = new ArrayList<>();
 
         for (Object[] row : hasil) {
-            int id = (int) row[0];
-            String nama = (String) row[1];
-            int harga = (int) row[2];
+            int id          = ((Number) row[0]).intValue();
+            String nama     = (String) row[1];
+            int harga       = ((Number) row[2]).intValue();
             String kategori = (String) row[3];
-            int stok = (int) row[4];
-            String description = (String) row[5];
-            String imageUrl = (String) row[6];
+            int stok        = ((Number) row[4]).intValue();
+            String desc     = row[5] != null ? (String) row[5] : "";
+            String imageUrl = row[6] != null ? (String) row[6] : "";
 
-            list.add(new Produk(id, nama, harga, kategori, stok, description, imageUrl));
+            list.add(new Produk(id, nama, harga, kategori, stok, desc, imageUrl));
         }
 
         renderProduk(list);
@@ -545,7 +345,6 @@ public class TransaksiController implements Initializable {
         }
         renderKeranjang();
         updateSummary();
-
     }
 
     public void renderKeranjang() {
@@ -573,7 +372,6 @@ public class TransaksiController implements Initializable {
     }
 
     private HBox buildCartItem(CartItem ci) {
-        // Nama & harga satuan
         Label nama = new Label(ci.produk.nama);
         nama.getStyleClass().add("cart-item-nama");
 
@@ -584,7 +382,6 @@ public class TransaksiController implements Initializable {
         infoBox.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(infoBox, Priority.ALWAYS);
 
-        // Qty control
         Button btnMin = new Button("−");
         btnMin.getStyleClass().add("btn-qty");
         btnMin.setOnAction(e -> {
@@ -614,11 +411,9 @@ public class TransaksiController implements Initializable {
         HBox qtyBox = new HBox(4, btnMin, qtyLabel, btnPlus);
         qtyBox.setAlignment(Pos.CENTER);
 
-        // Subtotal
         Label subtotal = new Label("Rp " + FMT.format(ci.subtotal()));
         subtotal.getStyleClass().add("cart-item-subtotal");
 
-        // Hapus
         Button btnHapus = new Button("✕");
         btnHapus.getStyleClass().add("btn-hapus-item");
         btnHapus.setOnAction(e -> {
@@ -627,7 +422,6 @@ public class TransaksiController implements Initializable {
             updateSummary();
         });
 
-        // Row bawah: qty + subtotal + hapus
         HBox bottomRow = new HBox(8, qtyBox, subtotal, btnHapus);
         bottomRow.setAlignment(Pos.CENTER_LEFT);
 
@@ -646,19 +440,18 @@ public class TransaksiController implements Initializable {
     public void updateSummary() {
         data_transaksi.subtotal = data_transaksi.keranjang.values().stream().mapToLong(CartItem::subtotal).sum();
 
-        double diskonPct = parseDouble(tfDiskon.getText().replace("[^0-9]", ""));
+        double diskonPct = parseDouble(tfDiskon.getText().replaceAll("[^0-9]", ""));
         long diskon = (long) (data_transaksi.subtotal * diskonPct / 100.0);
         data_transaksi.total = data_transaksi.subtotal - diskon;
 
         lblSubtotal.setText("Rp " + FMT.format(data_transaksi.subtotal));
         lblDiskon.setText("- Rp " + FMT.format(diskon));
-
         lblTotal.setText("Rp " + FMT.format(data_transaksi.total));
 
-        // Kembalian
         tunai = parseLong(tfTunai.getText().replaceAll("[^0-9]", ""));
         kembalian = tunai - data_transaksi.total;
-        lblKembalian.setText(kembalian >= 0 ? "Kembalian Rp " + FMT.format(kembalian)
+        lblKembalian.setText(kembalian >= 0
+                ? "Kembalian Rp " + FMT.format(kembalian)
                 : "Kurang Rp " + FMT.format(Math.abs(kembalian)));
         lblKembalian.setStyle(kembalian >= 0 ? "-fx-text-fill: #00E5A0;" : "-fx-text-fill: #FF5C7C;");
     }
@@ -666,23 +459,20 @@ public class TransaksiController implements Initializable {
     // ═════════════════════════════════════════════════════
     // HANDLERS
     // ═════════════════════════════════════════════════════
-    @FXML
-    private void onDiskonChanged() {
-        updateSummary();
-    }
+    @FXML private void onDiskonChanged() { updateSummary(); }
 
     private boolean isUpdating = false;
 
     @FXML
     private void onTunaiChanged() {
-        if (isUpdating)
-            return;
+        if (isUpdating) return;
         isUpdating = true;
         String raw = tfTunai.getText().replaceAll("[^0-9]", "");
         if (raw.isEmpty()) {
             tfTunai.setText("");
             isUpdating = false;
             updateSummary();
+            return;
         }
         long value = Long.parseLong(raw);
         tfTunai.setText("Rp " + FMT.format(value));
@@ -698,37 +488,15 @@ public class TransaksiController implements Initializable {
         updateSummary();
     }
 
-    // Quick nominal tunai
-    @FXML
-    private void onQuick5() {
-        tfTunai.setText("5.000");
-        updateSummary();
-    }
+    @FXML private void onQuick5()  { tfTunai.setText("5.000");  updateSummary(); }
+    @FXML private void onQuick10() { tfTunai.setText("10.000"); updateSummary(); }
+    @FXML private void onQuick20() { tfTunai.setText("20.000"); updateSummary(); }
+    @FXML private void onQuick50() { tfTunai.setText("50.000"); updateSummary(); }
 
-    @FXML
-    private void onQuick10() {
-        tfTunai.setText("10.000");
-        updateSummary();
-    }
-
-    @FXML
-    private void onQuick20() {
-        tfTunai.setText("20.000");
-        updateSummary();
-    }
-
-    @FXML
-    private void onQuick50() {
-        tfTunai.setText("50.000");
-        updateSummary();
-    }
-
-    // Proses bayar
     @FXML
     private void onProsesBayar() {
-        if (data_transaksi.keranjang.isEmpty()) {
-            return;
-        }
+        if (data_transaksi.keranjang.isEmpty()) return;
+
         if (tfTunai.getText().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle("Peringatan");
@@ -738,69 +506,166 @@ public class TransaksiController implements Initializable {
             return;
         }
 
-        CartItem ci = data_transaksi.keranjang.values().iterator().next(); // ambil salah satu item untuk contoh
         if (kembalian >= 0) {
-
-            String sqlTransaksi = String.format("INSERT INTO tb_transaksi "
-                    + "(id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
-                    + "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
-
-                    session.id_user, data_transaksi.total, tunai, kembalian, 0, "Lunas", "");
-
+            String sqlTransaksi = String.format(
+                "INSERT INTO tb_transaksi (id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
+                + "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
+                session.id_user, data_transaksi.total, tunai, kembalian, 0, "Lunas", "");
             koneksi.eksekusiQuery(sqlTransaksi);
-
         } else {
-
-            String sqlTransaksi = String.format("INSERT INTO tb_transaksi "
-                    + "(id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
-                    + "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
-
-                    session.id_user, data_transaksi.total, tunai, 0, Math.abs(kembalian), "Belum Lunas", "");
-
+            String sqlTransaksi = String.format(
+                "INSERT INTO tb_transaksi (id_user, total_pembayaran, uang_pembayaran, kembalian, kekurangan, status_pembayaran, tanggal_transaksi, pelanggan) "
+                + "VALUES (%d, %d, %d, %d, %d, '%s', NOW(), '%s')",
+                session.id_user, data_transaksi.total, tunai, 0, Math.abs(kembalian), "Belum Lunas", "");
             koneksi.eksekusiQuery(sqlTransaksi);
         }
 
         for (CartItem item : data_transaksi.keranjang.values()) {
-
-            String sqlUpdateStok = "UPDATE tb_barang SET stok = stok - '" + item.qty + "' WHERE id_barang = '"
-                    + item.produk.id + "'";
-
+            String sqlUpdateStok = "UPDATE tb_barang SET stok = stok - " + item.qty + " WHERE id_barang = " + item.produk.id;
             koneksi.eksekusiQuery(sqlUpdateStok);
-            System.out.println("Berhasil update stok barang ID: " + item.produk.id +
-                    " qty: " + item.qty);
         }
-        // Update stok di database
 
         semuaProduk.clear();
         loadproduk();
         onClearSearch();
 
-        // TODO: simpan ke database, cetak struk, dll.
-        System.out.println("=== TRANSAKSI BERHASIL ===");
-        System.out.println("No: #TRX-" + String.format("%04d", noTrx));
-        System.out.println("Metode: " + metodeBayar);
         tfTunai.clear();
         navigation nav = new navigation();
         Stage stage = (Stage) btnBayar.getScene().getWindow();
         nav.detailTransaksi(stage, this);
+    }
 
+    // ═════════════════════════════════════════════════════
+    // SIDEBAR
+    // ═════════════════════════════════════════════════════
+    @FXML
+    private void onToggleSidebar() {
+        sidebarCollapsed = !sidebarCollapsed;
+        double targetWidth = sidebarCollapsed ? SIDEBAR_MINI : SIDEBAR_FULL;
+
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.ZERO,
+                new KeyValue(sidebar.prefWidthProperty(), sidebar.getPrefWidth()),
+                new KeyValue(sidebar.minWidthProperty(), sidebar.getMinWidth())),
+            new KeyFrame(Duration.millis(350),
+                new KeyValue(sidebar.prefWidthProperty(), targetWidth),
+                new KeyValue(sidebar.minWidthProperty(), targetWidth)));
+
+        if (sidebarCollapsed) {
+            hideSidebarText();
+            toggleBtn.setText("▶");
+            logoRow.setAlignment(Pos.CENTER);
+            logoRow.setPadding(new Insets(18, 0, 18, 0));
+            userRow.setAlignment(Pos.CENTER);
+            userRow.setPadding(new Insets(12, 0, 12, 0));
+        } else {
+            timeline.setOnFinished(e -> {
+                showSidebarText();
+                logoRow.setAlignment(Pos.CENTER_LEFT);
+                logoRow.setPadding(new Insets(18, 16, 18, 16));
+                userRow.setAlignment(Pos.CENTER_LEFT);
+                userRow.setPadding(new Insets(12, 16, 12, 16));
+            });
+            toggleBtn.setText("◀");
+        }
+
+        updateNavPadding(sidebarCollapsed);
+        timeline.play();
+    }
+
+    @FXML
+    private void onNotif() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Notifikasi");
+        alert.setHeaderText(null);
+        alert.setContentText("Tidak ada pemberitahuan baru.");
+        alert.showAndWait();
+    }
+
+    @FXML private void onNavDashboard() {
+        setActiveNav(navDashboard);
+        navigation nav = new navigation();
+        nav.navigateToDashboard();
+        Stage stage = (Stage) navDashboard.getScene().getWindow();
+        stage.close();
+        data_transaksi.keranjang.clear();
+    }
+
+    @FXML private void onNavProduk() {
+        setActiveNav(navProduk);
+        navigation nav = new navigation();
+        nav.navigateToProduk();
+        Stage stage = (Stage) navProduk.getScene().getWindow();
+        stage.close();
+    }
+
+    @FXML private void onNavKasir()      { setActiveNav(navKasir); }
+    @FXML private void onNavPelanggan()  { setActiveNav(navPelanggan); }
+
+    @FXML private void onNavLaporan() {
+        setActiveNav(navLaporan);
+        navigation nav = new navigation();
+        nav.navigateToLaporan();
+        Stage stage = (Stage) navLaporan.getScene().getWindow();
+        stage.close();
+    }
+
+    @FXML private void onNavPiutang() {
+        setActiveNav(navPiutang);
+        navigation nav = new navigation();
+        nav.navigateToPiutang();
+        Stage stage = (Stage) navPiutang.getScene().getWindow();
+        stage.close();
+    }
+
+    @FXML private void onNavPengaturan() { setActiveNav(navPengaturan); }
+
+    private void hideSidebarText() {
+        logoBrand.setVisible(false); logoBrand.setManaged(false);
+        userInfo.setVisible(false);  userInfo.setManaged(false);
+        setNavLabelsVisible(false);
+    }
+
+    private void showSidebarText() {
+        logoBrand.setVisible(true); logoBrand.setManaged(true);
+        userInfo.setVisible(true);  userInfo.setManaged(true);
+        setNavLabelsVisible(true);
+    }
+
+    private void setNavLabelsVisible(boolean visible) {
+        List<Label> labels = List.of(navLblDashboard, navLblProduk, navLblKasir,
+                navLblPelanggan, navLblLaporan, navLblPiutang, navLblPengaturan);
+        for (Label lbl : labels) {
+            lbl.setVisible(visible);
+            lbl.setManaged(visible);
+        }
+    }
+
+    private void updateNavPadding(boolean collapsed) {
+        Insets pad = collapsed ? new Insets(10, 0, 10, 0) : new Insets(10, 14, 10, 0);
+        List<HBox> items = List.of(navDashboard, navProduk, navKasir,
+                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        for (HBox item : items) {
+            item.setAlignment(collapsed ? Pos.CENTER : Pos.CENTER_LEFT);
+            item.setPadding(pad);
+        }
+    }
+
+    private void setActiveNav(HBox selected) {
+        List<HBox> all = List.of(navDashboard, navProduk, navKasir,
+                navPelanggan, navLaporan, navPiutang, navPengaturan);
+        for (HBox item : all) item.getStyleClass().removeAll("nav-active");
+        if (selected != null) selected.getStyleClass().add("nav-active");
     }
 
     // ── Helpers ───────────────────────────────────────────
     private double parseDouble(String s) {
-        try {
-            return s == null || s.isBlank() ? 0 : Double.parseDouble(s.trim());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        try { return s == null || s.isBlank() ? 0 : Double.parseDouble(s.trim()); }
+        catch (NumberFormatException e) { return 0; }
     }
 
     private long parseLong(String s) {
-        try {
-            return s == null || s.isBlank() ? 0 : Long.parseLong(s.trim());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        try { return s == null || s.isBlank() ? 0 : Long.parseLong(s.trim()); }
+        catch (NumberFormatException e) { return 0; }
     }
-
 }
