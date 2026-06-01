@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -71,8 +72,6 @@ public class BarangController implements Initializable {
     private ObservableList<BarangModel> masterData = FXCollections.observableArrayList();
     private FilteredList<BarangModel> filteredData;
     private boolean isSidebarExpanded = true;
-
-    // flag agar listener harga tidak loop
     private boolean isUpdatingHarga = false;
 
     @Override
@@ -86,7 +85,7 @@ public class BarangController implements Initializable {
         colDeskripsi.setCellValueFactory(new PropertyValueFactory<>("deskripsi"));
         tabelBarang.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-        // ── Kolom harga tampil dengan prefix "Rp " ──
+        // ── Kolom harga tampil dengan prefix "Rp" ──
         colHarga.setCellValueFactory(new PropertyValueFactory<>("harga"));
         colHarga.setCellFactory(col -> new TableCell<BarangModel, Integer>() {
             @Override
@@ -100,6 +99,7 @@ public class BarangController implements Initializable {
             }
         });
 
+        // ── Kolom gambar ──
         colGambar.setCellValueFactory(new PropertyValueFactory<>("gambar"));
         colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
             private final ImageView imageView = new ImageView();
@@ -134,33 +134,32 @@ public class BarangController implements Initializable {
             }
         });
 
+        // ── Kolom status ──
         colStatus.setCellValueFactory(cellData -> {
             int stokVal = cellData.getValue().getStok();
             return new SimpleStringProperty(stokVal > 0 ? "Tersedia" : "Habis");
         });
 
-        // ── Hanya angka yang bisa diinput di txtStok ──
+        // ── txtStok: hanya angka ──
         txtStok.textProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal.matches("\\d*")) {
                 txtStok.setText(newVal.replaceAll("[^\\d]", ""));
             }
         });
 
-        // ── txtHarga: hanya angka, tampil dengan prefix "Rp " ──
+        // ── txtHarga: hanya angka, format Rp otomatis ──
         txtHarga.textProperty().addListener((obs, oldVal, newVal) -> {
             if (isUpdatingHarga) return;
             isUpdatingHarga = true;
 
-            // Ambil hanya angka dari input
             String angkaSaja = newVal.replaceAll("[^\\d]", "");
 
             if (angkaSaja.isEmpty()) {
                 txtHarga.setText("");
             } else {
-                // Format dengan "Rp " di depan
                 String formatted = "Rp " + String.format("%,d", Long.parseLong(angkaSaja)).replace(',', '.');
                 txtHarga.setText(formatted);
-                txtHarga.positionCaret(formatted.length());
+                Platform.runLater(() -> txtHarga.positionCaret(txtHarga.getText().length()));
             }
 
             isUpdatingHarga = false;
@@ -171,29 +170,72 @@ public class BarangController implements Initializable {
         filteredData = new FilteredList<>(masterData, p -> true);
         tabelBarang.setItems(filteredData);
 
+        // ── Listener pilih baris tabel ──
         tabelBarang.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 txtNama.setText(newSelection.getNama());
                 cmbKategori.setValue(newSelection.getKategori());
-
-                // Tampilkan harga dengan format Rp
-                String hargaFormatted = "Rp " + String.format("%,d", newSelection.getHarga()).replace(',', '.');
-                isUpdatingHarga = true;
-                txtHarga.setText(hargaFormatted);
-                isUpdatingHarga = false;
-
                 txtStok.setText(String.valueOf(newSelection.getStok()));
                 txtDeskripsi.setText(newSelection.getDeskripsi());
                 lblFilePath.setText(newSelection.getGambar() != null ? newSelection.getGambar() : "Tidak ada file dipilih");
+
+                // Set harga dengan format Rp
+                isUpdatingHarga = true;
+                String hargaFormatted = "Rp " + String.format("%,d", newSelection.getHarga()).replace(',', '.');
+                txtHarga.setText(hargaFormatted);
+                Platform.runLater(() -> txtHarga.positionCaret(txtHarga.getText().length()));
+                isUpdatingHarga = false;
             }
         });
     }
 
-    // ── Helper: ambil angka murni dari txtHarga ──
+    // ── Ambil angka murni dari txtHarga ──
     private int getHargaValue() {
         String angkaSaja = txtHarga.getText().replaceAll("[^\\d]", "");
         if (angkaSaja.isEmpty()) return 0;
-        return Integer.parseInt(angkaSaja);
+        try {
+            return Integer.parseInt(angkaSaja);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // VALIDASI INPUT
+    // ═══════════════════════════════════════════
+    private boolean isInputValid(boolean isUpdate, BarangModel dipilih) {
+        StringBuilder pesan = new StringBuilder();
+
+        if (txtNama.getText().trim().isEmpty()) {
+            pesan.append("- Nama barang wajib diisi.\n");
+        }
+        if (cmbKategori.getValue() == null) {
+            pesan.append("- Kategori wajib dipilih.\n");
+        }
+        if (txtHarga.getText().trim().isEmpty() || getHargaValue() <= 0) {
+            pesan.append("- Harga wajib diisi dan harus lebih dari 0.\n");
+        }
+        if (txtStok.getText().trim().isEmpty()) {
+            pesan.append("- Stok wajib diisi.\n");
+        }
+
+        // Validasi gambar:
+        // - Tambah: wajib pilih gambar baru
+        // - Ubah  : boleh tidak pilih ulang jika data lama sudah punya gambar
+        boolean gambarBaru = !lblFilePath.getText().equals("Tidak ada file dipilih");
+        boolean gambarLama = isUpdate && dipilih != null
+                && dipilih.getGambar() != null
+                && !dipilih.getGambar().isBlank();
+
+        if (!gambarBaru && !gambarLama) {
+            pesan.append("- Gambar barang wajib dipilih.\n");
+        }
+
+        if (pesan.length() > 0) {
+            showAlert("Peringatan", "Harap lengkapi data berikut:\n\n" + pesan.toString().trim());
+            return false;
+        }
+        return true;
     }
 
     // ═══════════════════════════════════════════
@@ -227,18 +269,16 @@ public class BarangController implements Initializable {
     // ═══════════════════════════════════════════
     @FXML
     void tambahBarang(ActionEvent event) {
-        if (txtNama.getText().isEmpty() || cmbKategori.getValue() == null
-                || txtHarga.getText().isEmpty() || txtStok.getText().isEmpty()) {
-            showAlert("Peringatan", "Semua kolom utama wajib diisi!");
-            return;
-        }
+        // Validasi: gambar wajib diisi saat tambah (isUpdate=false, dipilih=null)
+        if (!isInputValid(false, null)) return;
+
         try {
-            String nama      = txtNama.getText();
+            String nama      = txtNama.getText().trim();
             String kategori  = cmbKategori.getValue();
-            int harga        = getHargaValue(); // pakai helper, ambil angka murni
-            int stok         = Integer.parseInt(txtStok.getText());
+            int harga        = getHargaValue();
+            int stok         = Integer.parseInt(txtStok.getText().trim());
             String deskripsi = txtDeskripsi.getText();
-            String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? null : lblFilePath.getText();
+            String gambar    = lblFilePath.getText();
 
             String query = "INSERT INTO tb_barang (nama_barang, kategori, harga, stok, deskripsi, image_url) VALUES (?, ?, ?, ?, ?, ?)";
             try (Connection conn = koneksi.getConnection();
@@ -257,7 +297,7 @@ public class BarangController implements Initializable {
             clearForm(null);
 
         } catch (NumberFormatException e) {
-            showAlert("Kesalahan Input", "Harga dan Stok harus diisi menggunakan angka bulat!");
+            showAlert("Kesalahan Input", "Stok harus berupa angka bulat!");
         } catch (SQLException e) {
             showAlert("Error DB", "Gagal menambah data: " + e.getMessage());
         }
@@ -270,13 +310,19 @@ public class BarangController implements Initializable {
             showAlert("Peringatan", "Silakan pilih salah satu data barang di tabel yang ingin diubah!");
             return;
         }
+
+        // Validasi: gambar boleh tidak dipilih ulang jika data lama sudah ada (isUpdate=true)
+        if (!isInputValid(true, dipilih)) return;
+
         try {
-            String nama      = txtNama.getText();
+            String nama      = txtNama.getText().trim();
             String kategori  = cmbKategori.getValue();
-            int harga        = getHargaValue(); // pakai helper
-            int stok         = Integer.parseInt(txtStok.getText());
+            int harga        = getHargaValue();
+            int stok         = Integer.parseInt(txtStok.getText().trim());
             String deskripsi = txtDeskripsi.getText();
-            String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? dipilih.getGambar() : lblFilePath.getText();
+            String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih")
+                               ? dipilih.getGambar()
+                               : lblFilePath.getText();
 
             String query = "UPDATE tb_barang SET nama_barang=?, kategori=?, harga=?, stok=?, deskripsi=?, image_url=? WHERE id_barang=?";
             try (Connection conn = koneksi.getConnection();
@@ -296,7 +342,7 @@ public class BarangController implements Initializable {
             clearForm(null);
 
         } catch (NumberFormatException e) {
-            showAlert("Kesalahan Input", "Harga dan Stok harus diisi menggunakan angka bulat!");
+            showAlert("Kesalahan Input", "Stok harus berupa angka bulat!");
         } catch (SQLException e) {
             showAlert("Error DB", "Gagal mengubah data: " + e.getMessage());
         }
@@ -330,7 +376,9 @@ public class BarangController implements Initializable {
     void clearForm(ActionEvent event) {
         txtNama.clear();
         cmbKategori.setValue(null);
+        isUpdatingHarga = true;
         txtHarga.clear();
+        isUpdatingHarga = false;
         txtStok.clear();
         txtDeskripsi.clear();
         lblFilePath.setText("Tidak ada file dipilih");
@@ -428,8 +476,7 @@ public class BarangController implements Initializable {
         stage.close();
     }
 
-    @FXML
-    void onNavPelanggan() { setActiveNav(navPelanggan); }
+    @FXML void onNavPelanggan() { setActiveNav(navPelanggan); }
 
     @FXML
     void onNavLaporan() {
@@ -449,8 +496,7 @@ public class BarangController implements Initializable {
         stage.close();
     }
 
-    @FXML
-    void onNavPengaturan() { setActiveNav(navPengaturan); }
+    @FXML void onNavPengaturan() { setActiveNav(navPengaturan); }
 
     private void setActiveNav(HBox selected) {
         java.util.List<HBox> all = java.util.List.of(
