@@ -6,8 +6,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class LaporanModel {
-
-    
     public static final ObservableList<LaporanTransaksiItem> dataLaporanTransaksi = FXCollections.observableArrayList();
     // Static list masing-masing
     public static final ObservableList<HarianItem> dataHarian = FXCollections.observableArrayList();

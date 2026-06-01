@@ -1,16 +1,13 @@
 package com.mycompany.projectuas;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import com.mycompany.Model.DetailTransaksiModel;
-import com.mycompany.Model.DetailTransaksiModel.ItemTransaksi;
-
-import com.mycompany.Model.TransaksiModel.CartItem;
 import com.mycompany.Model.TransaksiModel;
+import com.mycompany.Model.TransaksiModel.CartItem;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -224,7 +221,7 @@ public class DetailTransaksiController implements Initializable {
         row.getStyleClass().add("item-row");
         row.setAlignment(Pos.CENTER_LEFT);
 
-        return new HBox(12, lblNo, namaBox, lblHarga, lblQty, lblSub);
+        return row;
     }
 
     // ── Item row ──────────────────────────────────────
@@ -233,11 +230,10 @@ public class DetailTransaksiController implements Initializable {
     private void updateSummary() {
         // TransaksiModel.subtotal = listItem.stream()
         // .mapToLong(ItemTransaksi::subtotal).sum();
-        long pajak = (long) (TransaksiModel.subtotal * 0.11);
+       
         // long total = TransaksiModel.subtotal + pajak;
 
         lblSubtotal.setText("Rp " + FMT.format(TransaksiModel.subtotal));
-        lblPajak.setText("Rp " + FMT.format(pajak));
         lblTotal.setText("Rp " + FMT.format(TransaksiModel.total));
         Label lbel_total = new Label("Total");
 
