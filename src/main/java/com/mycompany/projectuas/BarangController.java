@@ -72,6 +72,9 @@ public class BarangController implements Initializable {
     private FilteredList<BarangModel> filteredData;
     private boolean isSidebarExpanded = true;
 
+    // flag agar listener harga tidak loop
+    private boolean isUpdatingHarga = false;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cmbKategori.setItems(FXCollections.observableArrayList("Makanan", "Minuman"));
@@ -79,10 +82,23 @@ public class BarangController implements Initializable {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNama.setCellValueFactory(new PropertyValueFactory<>("nama"));
         colKategori.setCellValueFactory(new PropertyValueFactory<>("kategori"));
-        colHarga.setCellValueFactory(new PropertyValueFactory<>("harga"));
         colStok.setCellValueFactory(new PropertyValueFactory<>("stok"));
         colDeskripsi.setCellValueFactory(new PropertyValueFactory<>("deskripsi"));
         tabelBarang.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
+        // ── Kolom harga tampil dengan prefix "Rp " ──
+        colHarga.setCellValueFactory(new PropertyValueFactory<>("harga"));
+        colHarga.setCellFactory(col -> new TableCell<BarangModel, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText("Rp " + String.format("%,d", item).replace(',', '.'));
+                }
+            }
+        });
 
         colGambar.setCellValueFactory(new PropertyValueFactory<>("gambar"));
         colGambar.setCellFactory(column -> new TableCell<BarangModel, String>() {
@@ -123,6 +139,33 @@ public class BarangController implements Initializable {
             return new SimpleStringProperty(stokVal > 0 ? "Tersedia" : "Habis");
         });
 
+        // ── Hanya angka yang bisa diinput di txtStok ──
+        txtStok.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal.matches("\\d*")) {
+                txtStok.setText(newVal.replaceAll("[^\\d]", ""));
+            }
+        });
+
+        // ── txtHarga: hanya angka, tampil dengan prefix "Rp " ──
+        txtHarga.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (isUpdatingHarga) return;
+            isUpdatingHarga = true;
+
+            // Ambil hanya angka dari input
+            String angkaSaja = newVal.replaceAll("[^\\d]", "");
+
+            if (angkaSaja.isEmpty()) {
+                txtHarga.setText("");
+            } else {
+                // Format dengan "Rp " di depan
+                String formatted = "Rp " + String.format("%,d", Long.parseLong(angkaSaja)).replace(',', '.');
+                txtHarga.setText(formatted);
+                txtHarga.positionCaret(formatted.length());
+            }
+
+            isUpdatingHarga = false;
+        });
+
         loadDataFromDB();
 
         filteredData = new FilteredList<>(masterData, p -> true);
@@ -132,7 +175,13 @@ public class BarangController implements Initializable {
             if (newSelection != null) {
                 txtNama.setText(newSelection.getNama());
                 cmbKategori.setValue(newSelection.getKategori());
-                txtHarga.setText(String.valueOf(newSelection.getHarga()));
+
+                // Tampilkan harga dengan format Rp
+                String hargaFormatted = "Rp " + String.format("%,d", newSelection.getHarga()).replace(',', '.');
+                isUpdatingHarga = true;
+                txtHarga.setText(hargaFormatted);
+                isUpdatingHarga = false;
+
                 txtStok.setText(String.valueOf(newSelection.getStok()));
                 txtDeskripsi.setText(newSelection.getDeskripsi());
                 lblFilePath.setText(newSelection.getGambar() != null ? newSelection.getGambar() : "Tidak ada file dipilih");
@@ -140,10 +189,16 @@ public class BarangController implements Initializable {
         });
     }
 
+    // ── Helper: ambil angka murni dari txtHarga ──
+    private int getHargaValue() {
+        String angkaSaja = txtHarga.getText().replaceAll("[^\\d]", "");
+        if (angkaSaja.isEmpty()) return 0;
+        return Integer.parseInt(angkaSaja);
+    }
+
     // ═══════════════════════════════════════════
     // LOAD DATA DARI DATABASE
     // ═══════════════════════════════════════════
-
     private void loadDataFromDB() {
         masterData.clear();
         String query = "SELECT id_barang, nama_barang, kategori, harga, stok, deskripsi, image_url FROM tb_barang";
@@ -170,7 +225,6 @@ public class BarangController implements Initializable {
     // ═══════════════════════════════════════════
     // CRUD
     // ═══════════════════════════════════════════
-
     @FXML
     void tambahBarang(ActionEvent event) {
         if (txtNama.getText().isEmpty() || cmbKategori.getValue() == null
@@ -181,7 +235,7 @@ public class BarangController implements Initializable {
         try {
             String nama      = txtNama.getText();
             String kategori  = cmbKategori.getValue();
-            int harga        = Integer.parseInt(txtHarga.getText());
+            int harga        = getHargaValue(); // pakai helper, ambil angka murni
             int stok         = Integer.parseInt(txtStok.getText());
             String deskripsi = txtDeskripsi.getText();
             String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? null : lblFilePath.getText();
@@ -219,7 +273,7 @@ public class BarangController implements Initializable {
         try {
             String nama      = txtNama.getText();
             String kategori  = cmbKategori.getValue();
-            int harga        = Integer.parseInt(txtHarga.getText());
+            int harga        = getHargaValue(); // pakai helper
             int stok         = Integer.parseInt(txtStok.getText());
             String deskripsi = txtDeskripsi.getText();
             String gambar    = lblFilePath.getText().equals("Tidak ada file dipilih") ? dipilih.getGambar() : lblFilePath.getText();
@@ -304,7 +358,6 @@ public class BarangController implements Initializable {
         );
 
         File file = fc.showOpenDialog(txtNama.getScene().getWindow());
-
         if (file != null) {
             try {
                 Path tujuan = Path.of("src/main/resources/image-barang/" + file.getName());
@@ -319,7 +372,6 @@ public class BarangController implements Initializable {
     // ═══════════════════════════════════════════
     // SIDEBAR TOGGLE
     // ═══════════════════════════════════════════
-
     @FXML
     void onToggleSidebar(ActionEvent event) {
         if (isSidebarExpanded) {
@@ -352,7 +404,6 @@ public class BarangController implements Initializable {
     // ═══════════════════════════════════════════
     // NAVIGASI SIDEBAR
     // ═══════════════════════════════════════════
-
     @FXML
     void onNavDashboard() {
         setActiveNav(navDashboard);
@@ -378,9 +429,7 @@ public class BarangController implements Initializable {
     }
 
     @FXML
-    void onNavPelanggan() {
-        setActiveNav(navPelanggan);
-    }
+    void onNavPelanggan() { setActiveNav(navPelanggan); }
 
     @FXML
     void onNavLaporan() {
@@ -401,9 +450,7 @@ public class BarangController implements Initializable {
     }
 
     @FXML
-    void onNavPengaturan() {
-        setActiveNav(navPengaturan);
-    }
+    void onNavPengaturan() { setActiveNav(navPengaturan); }
 
     private void setActiveNav(HBox selected) {
         java.util.List<HBox> all = java.util.List.of(
@@ -422,7 +469,6 @@ public class BarangController implements Initializable {
     // ═══════════════════════════════════════════
     // HELPER
     // ═══════════════════════════════════════════
-
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(title);
