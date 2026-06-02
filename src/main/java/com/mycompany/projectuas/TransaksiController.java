@@ -146,6 +146,29 @@ public class TransaksiController implements Initializable {
     @FXML
     private Button btnQuick50;
 
+
+// ── Variables ──────────────────────────────────────────────
+
+    // ═════════════════════════════════════════════════════
+    // INITIALIZE
+    // ═════════════════════════════════════════════════════
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        loadproduk();
+        setupKategori();
+        setupSearch();
+        renderProduk(semuaProduk);
+        setActiveNav(navKasir);
+        updateSummary();
+        lblNamaKasir.setText("Budi S.");
+        lblShift.setText("Shift Siang");
+        lblNoTrx.setText(String.format("#TRX-%04d", TransaksiModel.noTrx));
+        setupForm();
+        TransaksiModel.keranjang.clear();
+        TransaksiModel.semuaProduk.clear();
+    }
+
+
     private boolean sidebarCollapsed = false;
     private static final double SIDEBAR_FULL = 220;
     private static final double SIDEBAR_MINI = 60;
@@ -306,25 +329,7 @@ public class TransaksiController implements Initializable {
         }
     }
 
-    // ── Variables ──────────────────────────────────────────────
-
-    // ═════════════════════════════════════════════════════
-    // INITIALIZE
-    // ═════════════════════════════════════════════════════
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        loadproduk();
-        setupKategori();
-        setupSearch();
-        renderProduk(semuaProduk);
-        setActiveNav(navKasir);
-        updateSummary();
-        lblNamaKasir.setText("Budi S.");
-        lblShift.setText("Shift Siang");
-        lblNoTrx.setText(String.format("#TRX-%04d", TransaksiModel.noTrx));
-        setupForm();
-    }
-
+    
     // ──data ────────────────────────────────────────
     private void loadproduk() {
         String sql = "SELECT * FROM tb_barang";
@@ -394,12 +399,24 @@ public class TransaksiController implements Initializable {
         img.setClip(clip);
 
         try {
-            var url = getClass().getResource("/image/not_found.png");
-            if (url != null) {
+            String imageName = p.imageUrl;
+
+            if (imageName == null || imageName.isBlank()) {
+                var url = getClass().getResource("/image/not_found.png");
                 img.setImage(new Image(url.toExternalForm()));
             }
+
+            var url = getClass().getResource("/image-barang/" + imageName);
+
+            if (url != null) {
+                img.setImage(new Image(url.toExternalForm()));
+            } else {
+                url = getClass().getResource("/image/not_found.png");
+                img.setImage(new Image(url.toExternalForm()));
+            }
+
         } catch (Exception e) {
-            System.out.println("Gambar tidak ditemukan");
+            e.printStackTrace();
         }
 
         StackPane imgWrapper = new StackPane(img);

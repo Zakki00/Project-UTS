@@ -22,30 +22,83 @@ public class BarangModel {
         this.gambar = new SimpleStringProperty(gambar);
     }
 
-    public int getId() { return id.get(); }
-    public SimpleIntegerProperty idProperty() { return id; }
+    public int getId() {
+        return id.get();
+    }
 
-    public String getNama() { return nama.get(); }
-    public void setNama(String v) { this.nama.set(v); }
-    public SimpleStringProperty namaProperty() { return nama; }
+    public SimpleIntegerProperty idProperty() {
+        return id;
+    }
 
-    public String getKategori() { return kategori.get(); }
-    public void setKategori(String v) { this.kategori.set(v); }
-    public SimpleStringProperty kategoriProperty() { return kategori; }
+    public String getNama() {
+        return nama.get();
+    }
 
-    public int getHarga() { return harga.get(); }
-    public void setHarga(int v) { this.harga.set(v); }
-    public SimpleIntegerProperty hargaProperty() { return harga; }
+    public void setNama(String v) {
+        this.nama.set(v);
+    }
 
-    public int getStok() { return stok.get(); }
-    public void setStok(int v) { this.stok.set(v); }
-    public SimpleIntegerProperty stokProperty() { return stok; }
+    public SimpleStringProperty namaProperty() {
+        return nama;
+    }
 
-    public String getDeskripsi() { return deskripsi.get(); }
-    public void setDeskripsi(String v) { this.deskripsi.set(v); }
-    public SimpleStringProperty deskripsiProperty() { return deskripsi; }
+    public String getKategori() {
+        return kategori.get();
+    }
 
-    public String getGambar() { return gambar.get(); }
-    public void setGambar(String v) { this.gambar.set(v); }
-    public SimpleStringProperty gambarProperty() { return gambar; }
+    public void setKategori(String v) {
+        this.kategori.set(v);
+    }
+
+    public SimpleStringProperty kategoriProperty() {
+        return kategori;
+    }
+
+    public int getHarga() {
+        return harga.get();
+    }
+
+    public void setHarga(int v) {
+        this.harga.set(v);
+    }
+
+    public SimpleIntegerProperty hargaProperty() {
+        return harga;
+    }
+
+    public int getStok() {
+        return stok.get();
+    }
+
+    public void setStok(int v) {
+        this.stok.set(v);
+    }
+
+    public SimpleIntegerProperty stokProperty() {
+        return stok;
+    }
+
+    public String getDeskripsi() {
+        return deskripsi.get();
+    }
+
+    public void setDeskripsi(String v) {
+        this.deskripsi.set(v);
+    }
+
+    public SimpleStringProperty deskripsiProperty() {
+        return deskripsi;
+    }
+
+    public String getGambar() {
+        return gambar.get();
+    }
+
+    public void setGambar(String v) {
+        this.gambar.set(v);
+    }
+
+    public SimpleStringProperty gambarProperty() {
+        return gambar;
+    }
 }
